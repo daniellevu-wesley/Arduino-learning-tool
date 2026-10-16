@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,sans-serif;background:#0d0f18;color:#e8e9ed;overflow:hidden}
+:root{--a:#f5a623;--ok:#22c55e;--pos:#ef4444;--neg:#3b82f6;--s1:#161927;--s2:#1e2235;--bd:#2a2f45;--mu:#6b7280;--pur:#7c3aed;--amber:#f5a623;--cyan:#0accc5}
+.shell{display:grid;grid-template-rows:46px 1fr;grid-template-columns:clamp(220px,28vw,300px) minmax(0,1fr);height:100vh;width:100vw}
+/* TOPBAR */
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.logo{font-size:11px;font-weight:700;color:var(--a);letter-spacing:.7px;text-transform:uppercase;white-space:nowrap}
+.mod-tabs{display:flex;gap:3px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:3px;flex-shrink:0}
+.mod-tab{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;color:var(--mu);transition:.15s;white-space:nowrap;user-select:none}
+.mod-tab.a1{background:var(--a);color:#000}
+.mod-tab.a2{background:var(--pur);color:#fff}
+.nav-arrows{display:flex;gap:4px;margin-left:8px}
+.nav-btn{width:28px;height:28px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;user-select:none;transition:.15s}
+.nav-btn:hover:not([disabled]){border-color:var(--a);color:var(--a)}
+.nav-btn[disabled]{opacity:.3;cursor:default;pointer-events:none}
+.stepper{display:flex;align-items:center;gap:3px;margin-left:auto}
+.sd{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--mu);cursor:pointer;transition:.2s;flex-shrink:0}
+.sd.active{background:var(--a);border-color:var(--a);color:#000}
+.sd.done{background:var(--ok);border-color:var(--ok);color:#000}
+.sd.m2{border-color:#7c3aed55}
+.sd.m2.active{background:var(--pur);border-color:var(--pur);color:#fff}
+.sd.m2.done{background:var(--ok);border-color:var(--ok);color:#000}
+.sline{width:7px;height:1px;background:var(--bd);flex-shrink:0}
+/* SIDEBAR */
+.sidebar{background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.step-head{padding:8px 12px 7px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.stag{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--a)}
+.stag.m2{color:#a78bfa}
+.stitle{font-size:clamp(11px,1.5vw,14px);font-weight:700;margin-top:2px;line-height:1.3}
+/* NEW FILE BANNERS */
+.banner{padding:7px 10px;display:flex;gap:7px;align-items:flex-start;flex-shrink:0;font-size:10px;line-height:1.45;border-bottom:1px solid var(--bd)}
+.banner.ide{background:#2a1f08;border-left:3px solid var(--amber);color:#fcd34d}
+.banner.tc{background:#081f1f;border-left:3px solid var(--cyan);color:#67e8f9}
+.banner b{display:block;margin-bottom:2px;font-size:10px}
+/* LOOP */
+.loop-wrap{width:100%;background:var(--s2);border-bottom:1px solid var(--bd);flex-shrink:0}
+#loopCv{display:block;width:100%}
+/* INSTRUCTIONS */
+.instr{flex:1;overflow-y:auto;padding:7px 10px;display:flex;flex-direction:column;gap:4px}
+.instr::-webkit-scrollbar{width:3px}
+.instr::-webkit-scrollbar-thumb{background:var(--bd)}
+.ic{display:flex;gap:7px;align-items:flex-start;padding:6px 9px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;transition:border-color .2s}
+.ic.lit{border-color:var(--ok)}
+.ic.hl{border-color:var(--a)}
+.inum{width:16px;height:16px;border-radius:50%;background:var(--a);color:#000;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:background .2s}
+.inum.ok{background:var(--ok)}
+.itxt{font-size:clamp(9px,1.1vw,11px);color:#c4c8db;line-height:1.45}
+.itxt b{color:var(--a)}
+.warn{display:flex;gap:6px;align-items:flex-start;padding:6px 8px;background:#1f1308;border:1px solid #78350f;border-radius:7px}
+.warn p{font-size:10px;color:#fcd34d;line-height:1.4}
+.info-chip{display:flex;gap:6px;align-items:flex-start;padding:6px 8px;background:#0f1f35;border:1px solid #1e4080;border-radius:7px}
+.info-chip p{font-size:10px;color:#7dd3fc;line-height:1.4}
+/* CODE REFERENCE PANEL — read-only */
+.code-ref{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.code-ref::-webkit-scrollbar{width:3px}
+.code-ref::-webkit-scrollbar-thumb{background:var(--bd)}
+.cref-section{background:#090b12;border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.cref-section h4{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin-bottom:6px}
+.cref-code{font-family:monospace;font-size:10px;line-height:1.7;user-select:none;-webkit-user-select:none;white-space:pre}
+/* Syntax colours — match editor */
+.cc-kw{color:#c792ea}
+.cc-fn{color:#82aaff}
+.cc-num{color:#f78c6c}
+.cc-str{color:#c3e88d}
+.cc-cm{color:#546e7a;font-style:italic}
+.cc-var{color:#e8e9ed}
+.cc-type{color:#ffcb8b}
+/* angle slider */
+.angle-section{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.angle-section h4{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin-bottom:6px}
+.angle-demo{display:flex;flex-direction:column;align-items:center;gap:5px}
+.angle-demo input[type=range]{width:100%}
+.angle-lbl{font-size:10px;color:var(--a);font-weight:700}
+/* error card */
+.err-card{background:#1a0a0a;border:1px solid #7f1d1d;border-radius:7px;padding:7px 9px;margin-top:4px}
+.err-title{font-size:9px;font-weight:700;color:#fca5a5;margin-bottom:2px;font-family:monospace}
+.err-body{font-size:9px;color:var(--mu);line-height:1.5}
+.err-body b{color:#fcd34d}
+/* SHELF + FOOTER */
+.shelf{padding:6px 10px;border-top:1px solid var(--bd);flex-shrink:0}
+.slbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.srow{display:flex;gap:4px;flex-wrap:wrap}
+.stool{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 5px;background:var(--s2);border:1.5px solid var(--bd);border-radius:6px;cursor:pointer;font-size:8px;color:var(--mu);transition:border-color .15s;min-width:38px}
+.stool:hover,.stool.sel{border-color:var(--a);color:var(--a)}
+.sfooter{padding:6px 10px;border-top:1px solid var(--bd);flex-shrink:0;display:flex;gap:5px}
+.bchk{flex:1;padding:7px;background:var(--a);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}
+.bchk:hover{opacity:.88}
+.bhint{padding:7px 9px;background:transparent;color:var(--mu);border:1px solid var(--bd);border-radius:7px;font-size:10px;cursor:pointer}
+.bhint:hover{border-color:var(--a);color:var(--a)}
+/* INFO STEPS */
+.info-step{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:7px}
+.info-step::-webkit-scrollbar{width:3px}
+.icard{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 11px}
+.icard h3{font-size:11px;font-weight:700;margin-bottom:5px}
+.icard p,.icard li{font-size:10px;color:var(--mu);line-height:1.6}
+.icard ol{padding-left:14px}
+.wire-legend{display:flex;flex-direction:column;gap:4px;margin-top:5px}
+.wl-row{display:flex;align-items:center;gap:7px}
+.wl-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.wl-txt{font-size:10px;color:#c4c8db}
+/* CANVAS AREA */
+.carea{position:relative;overflow:hidden;background:#e8eaed;min-width:0}
+#mc{position:absolute;top:0;left:0}
+.toast{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:8px 14px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .25s;z-index:30;max-width:80%;text-align:center}
+.toast.show{opacity:1}
+.toast.warn{border-color:#78350f;color:#fcd34d;background:#1f1308}
+.toast.ok{border-color:var(--ok);color:var(--ok);background:#0d2b1a}
+.ntip{position:absolute;background:#1e2235f0;border:1px solid var(--bd);border-radius:6px;padding:4px 8px;font-size:10px;pointer-events:none;opacity:0;transition:opacity .1s;z-index:20;white-space:nowrap}
+.ntip.show{opacity:1}
+.zoom-bar{position:absolute;bottom:14px;right:14px;display:flex;gap:4px;z-index:25}
+.zb{width:30px;height:30px;background:var(--s1);border:1px solid var(--bd);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);cursor:pointer;user-select:none}
+.zb:hover{border-color:var(--a);color:var(--a)}
+/* SPLIT PANEL (M2S3, M2S4) */
+.split-panel{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.split-top{flex:1;position:relative;overflow:hidden;min-height:0}
+.split-bottom{flex-shrink:0;height:clamp(160px,38%,280px);border-top:1px solid var(--bd);display:flex;flex-direction:column;background:#090b12}
+.editor-header{padding:6px 10px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s1)}
+.editor-title{font-size:10px;font-weight:700;color:var(--mu)}
+.code-status{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600}
+.code-status.ok{background:#0d2b1a;color:var(--ok);border:1px solid var(--ok)}
+.code-status.err{background:#1a0808;color:#f87171;border:1px solid #7f1d1d}
+.code-status.wait{background:var(--s2);color:var(--mu);border:1px solid var(--bd)}
+.code-editor{flex:1;overflow:hidden;position:relative}
+.code-editor textarea{width:100%;height:100%;background:#090b12;color:#e8e9ed;border:none;outline:none;resize:none;font-family:monospace;font-size:11px;line-height:1.65;padding:8px 10px;tab-size:2}
+.code-error-msg{position:absolute;bottom:0;left:0;right:0;background:#1a0808;border-top:1px solid #7f1d1d;padding:5px 10px;font-size:10px;color:#fca5a5;display:none}
+.code-error-msg.show{display:block}
+/* dual-status pills */
+.status-pills{display:flex;gap:6px;padding:7px 10px;border-top:1px solid var(--bd);flex-shrink:0;background:var(--s1)}
+.pill{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid var(--bd);color:var(--mu)}
+.pill.done{background:#0d2b1a;color:var(--ok);border-color:var(--ok)}
+.pill.active{background:#1a1308;color:var(--a);border-color:var(--a)}
+/* DOOR STEP — info panel in right */
+.door-panel{width:100%;height:100%;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:#090b12}
+.door-panel::-webkit-scrollbar{width:4px}
+.door-panel::-webkit-scrollbar-thumb{background:var(--bd)}
+.door-section{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}
+.door-section h2{font-size:13px;font-weight:700;color:#e8e9ed;margin-bottom:4px}
+.door-section h3{font-size:11px;font-weight:700;color:var(--a);margin-bottom:3px;margin-top:8px}
+.door-section h3:first-of-type{margin-top:0}
+.door-section p,.door-section li{font-size:11px;color:var(--mu);line-height:1.65}
+.door-section ol,.door-section ul{padding-left:16px;margin-top:3px}
+.door-link{display:block;font-size:10px;color:#60a5fa;text-decoration:underline;margin:3px 0;word-break:break-all;cursor:pointer}
+.door-link:hover{color:var(--a)}
+.best-box{background:#0f1f35;border:1px solid #1e4080;border-radius:7px;padding:9px 12px;margin-top:4px}
+.best-box p{font-size:10px;color:#7dd3fc;line-height:1.6}
+.advice-box{background:#1f1308;border:1px solid #78350f;border-radius:7px;padding:9px 12px;margin-top:4px}
+.advice-box p,.advice-box li{font-size:10px;color:#fcd34d;line-height:1.6}
+.advice-box ul{padding-left:14px}
+/* CERTIFICATE */
+.cert-panel{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1e1b3a 0%,#090b12 70%)}
+.cert-card{background:linear-gradient(135deg,#1e2235,#161927);border:2px solid var(--a);border-radius:16px;padding:32px 36px;text-align:center;max-width:420px;width:90%}
+.cert-icon{font-size:48px;margin-bottom:10px}
+.cert-title{font-size:20px;font-weight:700;color:var(--a);margin-bottom:4px}
+.cert-sub{font-size:12px;color:var(--mu);margin-bottom:18px}
+.cert-input{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;color:#e8e9ed;font-size:14px;text-align:center;outline:none;margin-bottom:12px}
+.cert-input:focus{border-color:var(--a)}
+.cert-btn{padding:10px 24px;background:var(--a);color:#000;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.cert-btn:hover{opacity:.88}
+.cert-note{font-size:10px;color:var(--mu)}
+/* SUCCESS OVERLAY */
+.sov{position:absolute;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
+.sov.show{opacity:1;pointer-events:auto}
+.scard{background:var(--s1);border:1px solid var(--ok);border-radius:14px;width:min(600px,95vw);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;position:relative}
+.scard::-webkit-scrollbar{width:3px}
+.scard::-webkit-scrollbar-thumb{background:var(--bd)}
+.sclose{position:absolute;top:10px;right:12px;background:transparent;border:1px solid var(--bd);color:var(--mu);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer}
+.sclose:hover{border-color:var(--pos);color:var(--pos)}
+.scard-top{padding:16px 20px 12px;text-align:center;border-bottom:1px solid var(--bd)}
+.sbadge{display:inline-flex;align-items:center;gap:5px;background:#0d2b1a;border:1px solid var(--ok);color:var(--ok);border-radius:20px;padding:3px 12px;font-size:10px;font-weight:700;margin-bottom:5px}
+.stitle2{font-size:18px;font-weight:700;color:var(--ok);margin-bottom:3px}
+.sbody{font-size:12px;color:var(--mu);line-height:1.6}
+.sescape{font-size:10px;color:var(--a);background:#1f1308;border:1px solid rgba(245,166,35,.25);border-radius:7px;padding:7px 10px;margin-top:7px;line-height:1.5}
+.tc-section{padding:10px 14px 0}
+.tc-lbl{font-size:9px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.tc-canvas{width:100%;display:block;border-radius:8px;background:#1c1f2e}
+.tc-note{font-size:9px;color:var(--mu);margin-top:5px;padding-bottom:10px}
+.code-block{padding:8px 14px 10px}
+.code-lbl{font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.code-block pre{background:#090b12;border-radius:6px;padding:10px;font-size:9px;line-height:1.65;font-family:monospace;overflow-x:auto;user-select:none}
+.snext{margin:0 14px 14px;padding:10px;background:var(--a);color:#000;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:block;width:calc(100% - 28px)}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="logo">🔐 Escape Room Builder</div>
+  <div class="mod-tabs">
+    <div class="mod-tab" id="mt1" onclick="switchMod(1)">Module 1 — Lights 💡</div>
+    <div class="mod-tab" id="mt2" onclick="switchMod(2)">Module 2 — Servo 🚪</div>
+  </div>
+  <div class="nav-arrows">
+    <div class="nav-btn" id="btnPrev" onclick="navStep(-1)">&#8592;</div>
+    <div class="nav-btn" id="btnNext" onclick="navStep(1)">&#8594;</div>
+  </div>
+  <div class="stepper" id="stepper"></div>
+</header>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="carea" id="carea">
+  <canvas id="mc"></canvas>
+  <div class="toast" id="toast"></div>
+  <div class="ntip" id="ntip"></div>
+  <div class="zoom-bar">
+    <div class="zb" onclick="zoomBtn(1.25)">+</div>
+    <div class="zb" onclick="zoomBtn(0.8)">−</div>
+    <div class="zb" onclick="zoomReset()" style="font-size:11px">⌂</div>
+  </div>
+  <div class="sov" id="sov"><div class="scard" id="scard"></div></div>
+</div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════
+// CURRICULUM
+// ═══════════════════════════════════════════════════
+var STEPS = [
+  // ── MODULE 1 ──
+  {id:'m1s1',mod:1,ms:1,tag:'Module 1 · Step 1',title:'Simple LED circuit',type:'circuit',
+   banner:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'This always-on LED tells players the puzzle is armed.',
+   sTitle:'The LED is on!',sBody:'5V → Resistor → LED+ → LED– → GND. That\'s the complete loop.',
+   hints:['Click the red 5V dot, then click the left resistor pin.','Click the right resistor pin, then click the LED+ dot (long leg).','Click the LED– dot (short leg), then click the blue GND dot.'],
+   chk:'c1',bld:'b1',photos:true,
+   code:'// No code needed for Step 1.\n// Arduino gives 5V power.\n// The resistor protects the LED.',
+   ihtml:
+    '<div class="ic hl"><div class="inum">1</div><div class="itxt">Select <b>Wire</b>. Click two <b>glowing dots</b> to connect them.</div></div>'+
+    '<div class="warn"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2L14 13H2Z" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg><p>LED: <b style="color:#fca5a5">long leg = +</b> · <b style="color:#93c5fd">short leg = –</b></p></div>'+
+    '<div class="ic" id="ic2"><div class="inum" id="n2">2</div><div class="itxt"><span style="color:#ef4444">●</span> <b style="color:#fca5a5">5V</b> → Resistor</div></div>'+
+    '<div class="ic" id="ic3"><div class="inum" id="n3">3</div><div class="itxt">Resistor → <b style="color:#fca5a5">LED + (long leg)</b></div></div>'+
+    '<div class="ic" id="ic4"><div class="inum" id="n4">4</div><div class="itxt"><span style="color:#3b82f6">●</span> <b style="color:#93c5fd">LED – (short leg)</b> → <b style="color:#93c5fd">GND</b></div></div>'},
+
+  {id:'m1s2',mod:1,ms:2,tag:'Module 1 · Step 2',title:'Add a pushbutton',type:'circuit',
+   banner:{type:'ide',name:'LED_button',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>LED_button</b>. Do not overwrite your last sketch.'},
+   banner2:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'Players press the button to reveal a light clue.',
+   sTitle:'Button controls the LED!',sBody:'INPUT_PULLUP: unpressed = HIGH, pressed = LOW.',
+   hints:['Wire LED first: 5V → Resistor → LED+ → LED– → GND.','Connect Button A → Pin 2.','Connect Button B → GND.'],
+   chk:'c2',bld:'b2',photos:true,
+   code:'int buttonPin = 2;\nint ledPin = 13;\n\nvoid setup() {\n  pinMode(ledPin, OUTPUT);\n  pinMode(buttonPin, INPUT_PULLUP);\n}\n\nvoid loop() {\n  if (digitalRead(buttonPin) == LOW) {\n    digitalWrite(ledPin, HIGH);\n  } else {\n    digitalWrite(ledPin, LOW);\n  }\n}',
+   ihtml:
+    '<div class="ic hl"><div class="inum">1</div><div class="itxt">Wire the LED circuit first (same as Step 1).</div></div>'+
+    '<div class="warn"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2L14 13H2Z" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg><p>Button must straddle the <b style="color:#fcd34d">centre gap</b> of the breadboard.</p></div>'+
+    '<div class="ic" id="ic2"><div class="inum" id="n2">2</div><div class="itxt"><span style="color:#ef4444">●</span> LED: <b style="color:#fca5a5">5V</b>→R→LED+→LED–→<b style="color:#93c5fd">GND</b></div></div>'+
+    '<div class="ic" id="ic3"><div class="inum" id="n3">3</div><div class="itxt"><span style="color:#a78bfa">●</span> Button A → <b style="color:#a78bfa">Pin 2</b></div></div>'+
+    '<div class="ic" id="ic4"><div class="inum" id="n4">4</div><div class="itxt"><span style="color:#3b82f6">●</span> Button B → <b style="color:#93c5fd">GND</b></div></div>'},
+
+  {id:'m1s3',mod:1,ms:3,tag:'Module 1 · Step 3',title:'Blinking LED',type:'circuit',
+   banner:{type:'ide',name:'LED_blink',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>LED_blink</b>. Do not overwrite your last sketch.'},
+   banner2:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'Blinking pattern = secret code. Players decode it to find the clue.',
+   sTitle:'The LED is blinking SOS!',sBody:'delay(200) = 0.2 seconds. Change the numbers to change the pattern.',
+   hints:['Wire 5V → Resistor → LED+ → LED– → GND first.','Connect Pin 9 → same node as LED+.'],
+   chk:'c3',bld:'b3',photos:false,
+   code:'int ledPin = 9;\n\nvoid setup() {\n  pinMode(ledPin, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(ledPin, HIGH);\n  delay(200);\n  digitalWrite(ledPin, LOW);\n  delay(200);\n}',
+   ihtml:
+    '<div class="ic hl"><div class="inum">1</div><div class="itxt">Wire LED: <b style="color:#fca5a5">5V</b>→R→LED+→LED–→<b style="color:#93c5fd">GND</b></div></div>'+
+    '<div class="info-chip"><p>💡 <b style="color:#7dd3fc">delay(200)</b> = 200ms = 0.2 seconds</p></div>'+
+    '<div class="ic" id="ic2"><div class="inum" id="n2">2</div><div class="itxt"><span style="color:#ef4444">●</span> <b style="color:#fca5a5">5V</b>→R→LED+→LED–→<b style="color:#93c5fd">GND</b></div></div>'+
+    '<div class="ic" id="ic3"><div class="inum" id="n3">3</div><div class="itxt"><span style="color:#a78bfa">●</span> <b style="color:#a78bfa">Pin 9</b> → same node as LED+</div></div>'},
+
+  {id:'m1s4',mod:1,ms:4,tag:'Module 1 · Step 4',title:'Write the blink code',type:'splitcode',
+   banner:{type:'ide',name:'LED_blink',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>LED_blink</b>. Do not overwrite your last sketch.'},
+   chk:'c_code_blink',bld:'b3'},
+
+  {id:'m1s5',mod:1,ms:5,tag:'Module 1 · Step 5',title:'Button + LED circuit',type:'splitfull',
+   banner:{type:'ide',name:'LED_button2',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>LED_button2</b>. Do not overwrite your last sketch.'},
+   banner2:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'Press the button to light up a clue — players must find the button to reveal the next step.',
+   chk:'c2',bld:'b2'},
+
+  // ── MODULE 2 ──
+  {id:'m2s1',mod:2,ms:1,tag:'Module 2 · Step 1',title:'What is a servo?',type:'info'},
+
+  {id:'m2s2',mod:2,ms:2,tag:'Module 2 · Step 2',title:'Wire the servo',type:'circuit',
+   banner:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'Servo wired — it will turn to any angle you command.',
+   sTitle:'Servo wired!',sBody:'Red = 5V, Black = GND, Orange = signal to Pin 9.',
+   hints:['Red servo wire → 5V.','Black wire → GND.','Orange wire → Pin 9 (~).'],
+   chk:'c5',bld:'b5',photos:true,
+   code:'#include <Servo.h>\n\nServo myServo;\n\nvoid setup() {\n  myServo.attach(9);\n  myServo.write(0);\n}\n\nvoid loop() {\n\n}',
+   ihtml:
+    '<div class="ic hl"><div class="inum">1</div><div class="itxt">Wire the servo — match the wire colours exactly.</div></div>'+
+    '<div class="warn"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2L14 13H2Z" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg><p>Wrong wire = fried servo. Match colours exactly.</p></div>'+
+    '<div class="ic" id="ic2"><div class="inum" id="n2">2</div><div class="itxt"><span style="color:#ef4444">●</span> Red → <b style="color:#fca5a5">5V</b></div></div>'+
+    '<div class="ic" id="ic3"><div class="inum" id="n3">3</div><div class="itxt"><span style="color:#3b82f6">●</span> Black → <b style="color:#93c5fd">GND</b></div></div>'+
+    '<div class="ic" id="ic4"><div class="inum" id="n4">4</div><div class="itxt"><span style="color:#f97316">●</span> Orange → <b style="color:#fdba74">Pin 9 (~)</b></div></div>'},
+
+  {id:'m2s3',mod:2,ms:3,tag:'Module 2 · Step 3',title:'Write the servo code',type:'splitcode',
+   banner:{type:'ide',name:'Servo_code',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>Servo_code</b>. Do not overwrite your last sketch.'},
+   chk:'c_code3',bld:'b5'},
+
+  {id:'m2s4',mod:2,ms:4,tag:'Module 2 · Step 4',title:'Full escape room circuit',type:'splitfull',
+   banner:{type:'ide',name:'EscapeRoom',msg:'Beside your circuit, create a new sketch in Arduino IDE: <b>File → New</b>. Name it <b>EscapeRoom</b>. Do not overwrite your last sketch.'},
+   banner2:{type:'tc',msg:'Open TinkerCad → Circuits → click <b>+ Create new Circuit</b>. Do not add to your previous circuit.'},
+   escapeMsg:'Button → LED lights + servo opens door. Your escape room is alive!',
+   chk:'c8',bld:'b8'},
+
+  {id:'m2s5',mod:2,ms:5,tag:'Module 2 · Step 5',title:'Attach servo to a door',type:'door'},
+
+  {id:'m2s6',mod:2,ms:6,tag:'Module 2 · Complete!',title:'You did it! 🎉',type:'cert'}
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+var DPR=window.devicePixelRatio||1;
+var cur=0,stepDone=[];
+var mc=document.getElementById('mc'),ctx=mc.getContext('2d'),ca=document.getElementById('carea');
+var CW=0,CH=0,camX=0,camY=0,camZ=1;
+var isPan=false,panS={x:0,y:0},camS={x:0,y:0};
+var tool='wire',ws=null,wires=[],drag=null,doff={x:0,y:0};
+var hovN=null,stepOK=false,hintI=0;
+var comps={},crot={};
+var blinkTmr=null,blinkOn=false,blinkIdx=0,blinkPh=true;
+var loopRaf=null,loopT=0;
+var servoAngle=0; // live angle from code editor
+var codeOK=false,circuitOK=false;
+
+function cl(a,v,b){return Math.max(a,Math.min(b,v));}
+function s2w(sx,sy){return{x:(sx-camX)/camZ,y:(sy-camY)/camZ};}
+function zAt(sx,sy,f){var w=s2w(sx,sy);camZ=cl(0.2,camZ*f,6);camX=sx-w.x*camZ;camY=sy-w.y*camZ;draw();}
+function zoomBtn(f){zAt(CW/2,CH/2,f);}
+function zoomReset(){camX=0;camY=0;camZ=1;draw();}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function switchMod(m){var idx=STEPS.findIndex(function(s){return s.mod===m;});if(idx>=0)goStep(idx);}
+function navStep(d){var newIdx=cur+d;if(newIdx>=0&&newIdx<STEPS.length)goStep(newIdx);}
+
+function goStep(idx){
+  cur=idx;
+  if(blinkTmr){clearTimeout(blinkTmr);blinkTmr=null;}
+  wires=[];ws=null;stepOK=false;codeOK=false;circuitOK=false;hintI=0;blinkOn=false;
+  camX=0;camY=0;camZ=1;hovN=null;drag=null;servoAngle=0;
+  crot={arduino:0,resistor:0,led:0,button:0,servo:0};
+  document.getElementById('sov').classList.remove('show');
+  buildStepper();buildSidebar();resize();
+  try{localStorage.setItem('ercb_cur',cur);}catch(e){}
+}
+function nextStep(){
+  stepDone[cur]=true;
+  try{localStorage.setItem('ercb_done',JSON.stringify(stepDone));}catch(e){}
+  document.getElementById('sov').classList.remove('show');
+  if(cur<STEPS.length-1)goStep(cur+1);
+  else showToast('All steps complete!','ok');
+}
+
+// ═══════════════════════════════════════════════════
+// LAYOUT
+// ═══════════════════════════════════════════════════
+function resize(){
+  CW=ca.offsetWidth;CH=ca.offsetHeight;
+  mc.width=CW*DPR;mc.height=CH*DPR;
+  mc.style.width=CW+'px';mc.style.height=CH+'px';
+  var step=STEPS[cur];
+  if(step.type==='circuit'||step.type==='splitcode'||step.type==='splitfull'){
+    placeComps();draw();
+  } else {
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,CW,CH);
+    drawInfoBg();
+  }
+}
+window.addEventListener('resize',resize);
+
+// ═══════════════════════════════════════════════════
+// STEPPER & MODULE TABS
+// ═══════════════════════════════════════════════════
+function buildStepper(){
+  var el=document.getElementById('stepper');el.innerHTML='';
+  var mod=STEPS[cur].mod;
+  document.getElementById('mt1').className='mod-tab'+(mod===1?' a1':'');
+  document.getElementById('mt2').className='mod-tab'+(mod===2?' a2':'');
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=(cur===STEPS.length-1);
+  STEPS.filter(function(s){return s.mod===mod;}).forEach(function(s,i){
+    if(i>0){var ln=document.createElement('div');ln.className='sline';el.appendChild(ln);}
+    var d=document.createElement('div'),gi=STEPS.indexOf(s);
+    d.className='sd'+(s.mod===2?' m2':'')+(gi===cur?' active':stepDone[gi]?' done':'');
+    d.textContent=s.ms;d.title=s.title;
+    (function(ii){d.onclick=function(){goStep(ii);};})(gi);
+    el.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════
+function buildSidebar(){
+  var step=STEPS[cur],sb=document.getElementById('sidebar'),m2=step.mod===2;
+  var head='<div class="step-head"><div class="stag'+(m2?' m2':'')+'">'+step.tag+'</div><div class="stitle">'+step.title+'</div></div>';
+
+  // Banners
+  var bannerHTML='';
+  if(step.banner) bannerHTML+=makeBanner(step.banner);
+  if(step.banner2) bannerHTML+=makeBanner(step.banner2);
+
+  if(step.type==='circuit'){
+    sb.innerHTML=head+bannerHTML+
+      '<div class="loop-wrap"><canvas id="loopCv"></canvas></div>'+
+      '<div class="instr" id="instrList">'+step.ihtml+'</div>'+
+      '<div class="shelf"><div class="slbl">Tool</div><div class="srow">'+
+      tBtn('wire','Wire')+tBtn('move','Move')+tBtn('rotate','Rotate')+tBtn('pan','Pan')+tBtn('erase','Erase')+
+      '</div></div>'+
+      '<div class="sfooter"><button class="bchk" onclick="doCheck()">Check circuit</button><button class="bhint" onclick="doHint()">Hint 💡</button></div>';
+    startLoop();
+
+  } else if(step.type==='splitcode'){
+    // M2S3: sidebar = read-only code reference + angle slider + errors
+    sb.innerHTML=head+bannerHTML+
+      '<div class="code-ref" id="codeRef" oncontextmenu="return false">'+
+        buildCodeRef()+
+      '</div>';
+    startLoop();
+
+  } else if(step.type==='splitfull'){
+    // M2S4: sidebar = instructions + tool shelf + status pills
+    sb.innerHTML=head+bannerHTML+
+      '<div class="loop-wrap"><canvas id="loopCv"></canvas></div>'+
+      '<div class="instr" id="instrList">'+
+        '<div class="ic hl"><div class="inum">1</div><div class="itxt">Wire <b>LED + Button + Servo</b> in the top panel.</div></div>'+
+        '<div class="ic" id="ic2"><div class="inum" id="n2">2</div><div class="itxt"><span style="color:#ef4444">●</span> LED: <b style="color:#fca5a5">5V</b>→R→LED+→LED–→<b style="color:#93c5fd">GND</b></div></div>'+
+        '<div class="ic" id="ic3"><div class="inum" id="n3">3</div><div class="itxt"><span style="color:#a78bfa">●</span> Button: <b style="color:#a78bfa">Pin 2</b>→Btn→<b style="color:#93c5fd">GND</b></div></div>'+
+        '<div class="ic" id="ic4"><div class="inum" id="n4">4</div><div class="itxt"><span style="color:#f97316">●</span> Servo: Red→<b style="color:#fca5a5">5V</b>, Black→<b style="color:#93c5fd">GND</b>, Orange→<b style="color:#fdba74">Pin 10</b></div></div>'+
+        '<div class="ic"><div class="inum" style="background:var(--pur)">5</div><div class="itxt">Write the code in the <b>bottom panel</b>.</div></div>'+
+      '</div>'+
+      '<div class="shelf"><div class="slbl">Tool</div><div class="srow">'+
+      tBtn('wire','Wire')+tBtn('move','Move')+tBtn('pan','Pan')+tBtn('erase','Erase')+
+      '</div></div>'+
+      '<div class="status-pills" id="statusPills">'+
+        '<div class="pill" id="pillCircuit">⬡ Circuit</div>'+
+        '<div class="pill" id="pillCode">⬡ Code</div>'+
+      '</div>';
+    startLoop();
+
+  } else if(step.type==='info'){
+    sb.innerHTML=head+
+      '<div class="loop-wrap"><canvas id="loopCv"></canvas></div>'+
+      '<div class="info-step">'+buildInfoSidebar(step)+'</div>';
+    startLoop();
+
+  } else if(step.type==='door'||step.type==='cert'){
+    sb.innerHTML=head+
+      '<div class="loop-wrap"><canvas id="loopCv"></canvas></div>'+
+      '<div class="info-step"><div class="icard"><h3>What to do</h3><p>'+(step.type==='door'?'Read the options on the right. Choose one that suits your escape room design.':'Enter your name on the right to download your completion certificate.')+' </p></div>'+
+      '<button class="bchk" style="margin:8px 0 0" onclick="nextStep()">'+(step.type==='door'?'I\'ve chosen my design →':'Finish')+' </button></div>';
+    startLoop();
+
+  }
+  tool='wire';
+}
+
+function makeBanner(b){
+  var cls=b.type==='ide'?'ide':'tc';
+  return '<div class="banner '+cls+'"><span>'+b.msg+'</span></div>';
+}
+
+// ─── Code reference panel for M2S3 ───────────────
+function buildCodeRef(){
+  var isServo=STEPS[cur].id==='m2s3';
+  return (isServo?
+    '<div class="cref-section" oncontextmenu="return false">'+
+      '<h4>Step-by-step breakdown</h4>'+
+      '<div class="cref-code" id="crefLive">'+renderCodeRef(0)+'</div>'+
+    '</div>'+
+    '<div class="angle-section">'+
+      '<h4>Try the angle</h4>'+
+      '<div class="angle-demo">'+
+        '<canvas id="servoDem" width="190" height="110"></canvas>'+
+        '<input type="range" min="0" max="180" value="0" id="angSlide" oninput="updateAngle()">'+
+        '<div class="angle-lbl" id="angLbl">0° — door closed</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="cref-section" oncontextmenu="return false">'+
+      '<h4>Full reference code — read only</h4>'+
+      '<div class="cref-code">'+renderFullServoCode(0)+'</div>'+
+    '</div>'
+  :
+    '<div class="cref-section" oncontextmenu="return false">'+
+      '<h4>Step-by-step breakdown</h4>'+
+      '<div class="cref-code">'+renderBlinkRef()+'</div>'+
+    '</div>'+
+    '<div class="cref-section" oncontextmenu="return false">'+
+      '<h4>Full reference code — read only</h4>'+
+      '<div class="cref-code">'+renderFullBlinkCode()+'</div>'+
+    '</div>'
+  )+
+  '<div class="cref-section">'+
+    '<h4>Common errors</h4>'+
+    (isServo?
+      '<div class="err-card"><div class="err-title">\'Servo\' was not declared</div><div class="err-body">Add <b>#include &lt;Servo.h&gt;</b> as the very first line.</div></div>':
+      '<div class="err-card"><div class="err-title">LED does not blink</div><div class="err-body">Check <b>pinMode(ledPin, OUTPUT)</b> is in setup() and your pin number matches your wiring.</div></div>'
+    )+
+    '<div class="err-card" style="margin-top:5px"><div class="err-title">Port not found</div><div class="err-body">Unplug USB → replug → Tools → Port → pick the new one.</div></div>'+
+    '<div class="err-card" style="margin-top:5px"><div class="err-title">Wrong board</div><div class="err-body">Tools → Board → <b>Arduino Uno</b>.</div></div>'+
+  '</div>';
+}
+
+function renderBlinkRef(){
+  return sp('cc-cm','// 1. Set which pin your LED is on')+'\n'+
+    sp('cc-kw','int')+' '+sp('cc-var','ledPin')+' = '+sp('cc-num','9')+sp('cc-var',';')+'\n\n'+
+    sp('cc-cm','// 2. Setup runs once at the start')+'\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','setup')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-fn','pinMode')+sp('cc-var','(ledPin, ')+sp('cc-val','OUTPUT')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n\n'+
+    sp('cc-cm','// 3. Loop runs forever')+'\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','loop')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-fn','digitalWrite')+sp('cc-var','(ledPin, ')+sp('cc-val','HIGH')+sp('cc-var',');')+sp('cc-cm','  // LED on')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','500')+sp('cc-var',');')+sp('cc-cm','        // wait 0.5 sec')+'\n'+
+    '  '+sp('cc-fn','digitalWrite')+sp('cc-var','(ledPin, ')+sp('cc-val','LOW')+sp('cc-var',');')+sp('cc-cm','   // LED off')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','500')+sp('cc-var',');')+sp('cc-cm','        // wait 0.5 sec')+'\n'+
+    sp('cc-var','}')+'\n';
+}
+
+function renderFullBlinkCode(){
+  return sp('cc-kw','int')+' '+sp('cc-var','ledPin')+' = '+sp('cc-num','9')+sp('cc-var',';')+'\n\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','setup')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-fn','pinMode')+sp('cc-var','(ledPin, ')+sp('cc-val','OUTPUT')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','loop')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-fn','digitalWrite')+sp('cc-var','(ledPin, ')+sp('cc-val','HIGH')+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','500')+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-fn','digitalWrite')+sp('cc-var','(ledPin, ')+sp('cc-val','LOW')+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','500')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n';
+}
+
+function renderCodeRef(angle){
+  var a=angle||0;
+  return sp('cc-cm','// 1. Load the Servo library')+'\n'+
+    sp('cc-kw','#include')+' '+sp('cc-str','&lt;Servo.h&gt;')+'\n\n'+
+    sp('cc-cm','// 2. Create a servo object')+'\n'+
+    sp('cc-type','Servo')+' '+sp('cc-var','myServo')+sp('cc-var',';')+'\n\n'+
+    sp('cc-cm','// 3. Setup runs once')+'\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','setup')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-var','myServo')+sp('cc-var','.')+sp('cc-fn','attach')+sp('cc-var','(')+sp('cc-num','9')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n\n'+
+    sp('cc-cm','// 4. Loop runs forever')+'\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','loop')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-var','myServo')+sp('cc-var','.')+sp('cc-fn','write')+sp('cc-var','(')+sp('cc-num',a)+sp('cc-var',');')+sp('cc-cm','  // turn to '+a+'°')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','2000')+sp('cc-var',');')+sp('cc-cm','  // wait 2 seconds')+'\n'+
+    sp('cc-var','}')+'\n';
+}
+
+function renderFullServoCode(angle){
+  var a=angle||0;
+  return sp('cc-kw','#include')+' '+sp('cc-str','&lt;Servo.h&gt;')+'\n\n'+
+    sp('cc-type','Servo')+' '+sp('cc-var','myServo;')+'\n\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','setup')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-var','myServo.')+sp('cc-fn','attach')+sp('cc-var','(')+sp('cc-num','9')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n\n'+
+    sp('cc-kw','void')+' '+sp('cc-fn','loop')+sp('cc-var','() {')+'\n'+
+    '  '+sp('cc-var','myServo.')+sp('cc-fn','write')+sp('cc-var','(')+sp('cc-num',a)+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','2000')+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-var','myServo.')+sp('cc-fn','write')+sp('cc-var','(')+sp('cc-num','0')+sp('cc-var',');')+'\n'+
+    '  '+sp('cc-fn','delay')+sp('cc-var','(')+sp('cc-num','2000')+sp('cc-var',');')+'\n'+
+    sp('cc-var','}')+'\n';
+}
+
+function sp(cls,txt){return '<span class="'+cls+'">'+txt+'</span>';}
+
+function updateAngle(){
+  var slide=document.getElementById('angSlide');if(!slide)return;
+  var a=parseInt(slide.value)||0;
+  var lbl=document.getElementById('angLbl');
+  if(lbl)lbl.textContent=a+'° — '+(a<5?'door closed':a>85&&a<95?'door OPEN!':'turning...');
+  // update code ref panels
+  var cr=document.getElementById('crefLive');
+  if(cr){cr.innerHTML=renderCodeRef(a);}
+  var fr=cr&&cr.parentElement&&cr.parentElement.parentElement&&cr.parentElement.parentElement.querySelector('.cref-code:last-of-type');
+  // re-render full code
+  var all=document.querySelectorAll('.cref-code');
+  if(all&&all.length>=2)all[all.length-1].innerHTML=renderFullServoCode(a);
+  drawServoDemo(a);
+  // also animate servo in circuit canvas
+  servoAngle=a;
+  if(STEPS[cur].type==='splitcode')draw();
+}
+
+function drawServoDemo(angle){
+  var cv=document.getElementById('servoDem');if(!cv)return;
+  var c=cv.getContext('2d'),W=cv.width,H=cv.height;
+  c.clearRect(0,0,W,H);c.fillStyle='#1e2235';c.fillRect(0,0,W,H);
+  var bx=W/2-32,by=H*.34,bw=64,bh=44;
+  var bg=c.createLinearGradient(bx,by,bx,by+bh);bg.addColorStop(0,'#6b7280');bg.addColorStop(1,'#374151');
+  c.fillStyle=bg;c.strokeStyle='#1f2937';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(bx+4,by);c.lineTo(bx+bw-4,by);c.arcTo(bx+bw,by,bx+bw,by+4,4);c.lineTo(bx+bw,by+bh-4);c.arcTo(bx+bw,by+bh,bx+bw-4,by+bh,4);c.lineTo(bx+4,by+bh);c.arcTo(bx,by+bh,bx,by+bh-4,4);c.lineTo(bx,by+4);c.arcTo(bx,by,bx+4,by,4);c.closePath();c.fill();c.stroke();
+  c.fillStyle='#1f2937';c.strokeStyle='#374151';c.lineWidth=.8;
+  c.beginPath();c.moveTo(bx+bw*.12+3,by+bh*.18);c.lineTo(bx+bw*.88-3,by+bh*.18);c.arcTo(bx+bw*.88,by+bh*.18,bx+bw*.88,by+bh*.18+3,3);c.lineTo(bx+bw*.88,by+bh*.82-3);c.arcTo(bx+bw*.88,by+bh*.82,bx+bw*.88-3,by+bh*.82,3);c.lineTo(bx+bw*.12+3,by+bh*.82);c.arcTo(bx+bw*.12,by+bh*.82,bx+bw*.12,by+bh*.82-3,3);c.lineTo(bx+bw*.12,by+bh*.18+3);c.arcTo(bx+bw*.12,by+bh*.18,bx+bw*.12+3,by+bh*.18,3);c.closePath();c.fill();c.stroke();
+  var px=W/2,py=by+bh*.5;
+  c.fillStyle='#ccc';c.beginPath();c.arc(px,py,6,0,Math.PI*2);c.fill();
+  var rad=(angle-90)*Math.PI/180;
+  var ex=px+Math.cos(rad)*38,ey=py+Math.sin(rad)*38;
+  c.strokeStyle='rgba(245,166,35,.25)';c.lineWidth=1.5;c.setLineDash([3,3]);
+  c.beginPath();c.arc(px,py,24,Math.min(-Math.PI/2,rad),Math.max(-Math.PI/2,rad));c.stroke();c.setLineDash([]);
+  c.strokeStyle='#f5a623';c.lineWidth=5;c.lineCap='round';
+  c.beginPath();c.moveTo(px,py);c.lineTo(ex,ey);c.stroke();
+  c.fillStyle='#f5a623';c.beginPath();c.arc(ex,ey,5,0,Math.PI*2);c.fill();
+  c.fillStyle=angle<5?'#3b82f6':angle>85?'#22c55e':'#f5a623';
+  c.font='bold 10px system-ui';c.textAlign='center';c.fillText(angle+'°',px,by-8);
+}
+
+// ─── Tool buttons ─────────────────────────────────
+var _icons={wire:'<svg width="24" height="9" viewBox="0 0 24 9"><line x1="2" y1="4.5" x2="22" y2="4.5" stroke="#f5a623" stroke-width="2" stroke-linecap="round"/><circle cx="2" cy="4.5" r="2" fill="#ef4444"/><circle cx="22" cy="4.5" r="2" fill="#3b82f6"/></svg>',move:'<svg width="24" height="12" viewBox="0 0 24 12"><text x="2" y="10" font-size="10" fill="#6b7280">✥</text></svg>',rotate:'<svg width="24" height="12" viewBox="0 0 24 12"><text x="2" y="10" font-size="11" fill="#6b7280">↻</text></svg>',pan:'<svg width="24" height="12" viewBox="0 0 24 12"><text x="2" y="10" font-size="10" fill="#6b7280">✋</text></svg>',erase:'<svg width="24" height="12" viewBox="0 0 24 12"><text x="5" y="10" font-size="10" fill="#6b7280">✕</text></svg>'};
+function tBtn(id,lbl){return '<div class="stool'+(id==='wire'?' sel':'')+'" id="t-'+id+'" onclick="selTool(\''+id+'\')">'+_icons[id]+lbl+'</div>';}
+function selTool(t){tool=t;ws=null;document.querySelectorAll('.stool').forEach(function(e){e.classList.remove('sel');});var el=document.getElementById('t-'+t);if(el)el.classList.add('sel');mc.style.cursor=t==='wire'?'crosshair':t==='erase'?'not-allowed':t==='pan'?'grab':'default';}
+
+// ─── Info sidebar content ─────────────────────────
+function buildInfoSidebar(step){
+  if(step.id==='m2s1')return [
+    '<div class="icard"><h3>What does a servo do?</h3><p>A servo is a small motor that turns to an exact angle between 0° and 180°. You tell it which angle and it goes there.</p></div>',
+    '<div class="icard"><h3>The 3 wires</h3><div class="wire-legend">'+
+      wrow('#ef4444','Red = 5V power')+wrow('#333','Black or Brown = GND','#888')+wrow('#f97316','Orange or Yellow = Signal (Pin 9)')+
+    '</div></div>',
+    '<div class="icard"><h3>PWM pins (~)</h3><p>The signal wire must go to a pin with a <b style="color:#f5a623">~</b> symbol. Pins 3, 5, 6, 9, 10, 11 all work. We use <b>Pin 9</b>.</p></div>',
+    '<div class="icard"><h3>Escape room use</h3><p>0° = door closed. 90° = door open. Connect the servo horn to a bracket to open a compartment when the puzzle is solved.</p></div>',
+    '<button class="bchk" style="margin:0" onclick="nextStep()">Next: Wire the servo →</button>'
+  ].join('');
+  return '';
+}
+function wrow(col,txt,stroke){return '<div class="wl-row"><div class="wl-dot" style="background:'+col+';'+(stroke?'border:1px solid '+stroke+';':'')+'"></div><span class="wl-txt">'+txt+'</span></div>';}
+
+// ═══════════════════════════════════════════════════
+// RIGHT PANEL BUILDERS
+// ═══════════════════════════════════════════════════
+function buildRightPanel(){
+  var step=STEPS[cur];
+  // Clear previous dynamic content in carea except canvas/toast/ntip/zoom/sov
+  var old=document.getElementById('dynPanel');if(old)old.remove();
+
+  if(step.type==='splitcode'){
+    var div=document.createElement('div');
+    div.id='dynPanel';
+    div.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;';
+    div.innerHTML=
+      '<div class="split-top" id="splitTop" style="flex:1;position:relative;min-height:0"></div>'+
+      '<div class="split-bottom">'+
+        '<div class="editor-header">'+
+          '<div class="editor-title">Write the servo code here</div>'+
+          '<div class="code-status wait" id="codeStatusBadge">Waiting for code</div>'+
+        '</div>'+
+        '<div class="code-editor">'+
+          '<textarea id="codeArea" placeholder="#include &lt;Servo.h&gt;\n\nServo myServo;\n\nvoid setup() {\n  myServo.attach(9);\n}\n\nvoid loop() {\n  myServo.write(0);\n  delay(2000);\n  myServo.write(90);\n  delay(2000);\n}" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>'+
+          '<div class="code-error-msg" id="codeErr"></div>'+
+        '</div>'+
+      '</div>';
+    ca.appendChild(div);
+    document.getElementById('codeArea').addEventListener('input',onCodeInput);
+    // canvas lives in splitTop
+    var st=document.getElementById('splitTop');
+    st.appendChild(mc);
+    mc.style.position='absolute';mc.style.top='0';mc.style.left='0';
+    CW=st.offsetWidth;CH=st.offsetHeight;
+    mc.width=CW*DPR;mc.height=CH*DPR;mc.style.width=CW+'px';mc.style.height=CH+'px';
+
+  } else if(step.type==='splitfull'){
+    var div2=document.createElement('div');
+    div2.id='dynPanel';
+    div2.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;';
+    div2.innerHTML=
+      '<div class="split-top" id="splitTop" style="flex:1;position:relative;min-height:0"></div>'+
+      '<div class="split-bottom">'+
+        '<div class="editor-header">'+
+          '<div class="editor-title">Write the escape room code here</div>'+
+          '<div class="code-status wait" id="codeStatusBadge">Waiting for code</div>'+
+        '</div>'+
+        '<div class="code-editor">'+
+          '<textarea id="codeArea" placeholder="#include &lt;Servo.h&gt;\n\nServo myServo;\nint buttonPin = 2;\nint ledPin = 9;\n\nvoid setup() {\n  myServo.attach(10);\n  pinMode(buttonPin, INPUT_PULLUP);\n  pinMode(ledPin, OUTPUT);\n}\n\nvoid loop() {\n  if (digitalRead(buttonPin) == LOW) {\n    digitalWrite(ledPin, HIGH);\n    myServo.write(90);\n    delay(3000);\n    myServo.write(0);\n    digitalWrite(ledPin, LOW);\n  }\n}" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>'+
+          '<div class="code-error-msg" id="codeErr"></div>'+
+        '</div>'+
+      '</div>';
+    ca.appendChild(div2);
+    document.getElementById('codeArea').addEventListener('input',onCodeInputFull);
+    var st2=document.getElementById('splitTop');
+    st2.appendChild(mc);
+    mc.style.position='absolute';mc.style.top='0';mc.style.left='0';
+    CW=st2.offsetWidth;CH=st2.offsetHeight;
+    mc.width=CW*DPR;mc.height=CH*DPR;mc.style.width=CW+'px';mc.style.height=CH+'px';
+
+  } else if(step.type==='door'){
+    mc.style.display='none';
+    var div3=document.createElement('div');div3.id='dynPanel';
+    div3.innerHTML=buildDoorPanel();
+    div3.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;';
+    ca.appendChild(div3);
+
+  } else if(step.type==='cert'){
+    mc.style.display='none';
+    var div4=document.createElement('div');div4.id='dynPanel';
+    div4.className='cert-panel';
+    div4.innerHTML=buildCertPanel();
+    div4.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;';
+    ca.appendChild(div4);
+
+  } else {
+    mc.style.display='block';
+    // put mc back in ca if it was moved
+    if(mc.parentElement!==ca)ca.insertBefore(mc,ca.firstChild);
+  }
+}
+
+function buildDoorPanel(){
+  return '<div class="door-panel">'+
+  '<div class="door-section">'+
+    '<h2>Using a Servo to Open a Door or Lid</h2>'+
+    '<p>A servo is a small motor that turns to a set angle. You can use it to move part of your escape room — like a swing-open door, a small chest lid, or a moving panel.</p>'+
+    '<p style="margin-top:6px;color:var(--a);font-size:10px">Options below go from easiest to hardest.</p>'+
+  '</div>'+
+  doorOption('1','Door linkage','easiest','Servo powered door','https://www.printables.com/model/396917-servo-powered-door','Simple swing-open door',[
+    'Print the door mechanism','Fix it beside the doorway','Attach the servo arm to the linkage','Add a lightweight door made from card or thin wood'
+  ])+
+  doorOption('2','Door linkage','next best','Rack and pinion door opening','https://www.thingiverse.com/thing:4870280','Servo pushes a small door open',[
+    'Print the linkage parts','Mount them beside the doorway','Connect the servo to the gear part','Attach the door so it swings when the servo turns'
+  ])+
+  doorOption('3','Door linkage part only','','Sturdy linkage for a small door','https://www.thingiverse.com/thing:5886883','For students who already made a door and only need the moving connector',[
+    'Print the linkage','Fix the servo in place','Connect one end to the servo arm','Connect the other end to the door','Test before gluing permanently'
+  ])+
+  doorOption('4','Hinged lid option','','Treasure chest','https://www.printables.com/model/261825-treasure-chest','Hinged lid opening instead of a full door',[
+    'Print the chest','Keep the lid light','Place the servo beside or behind the chest','Use the servo arm to lift or push the lid open'
+  ])+
+  doorOption('5','Servo mount — support only','','Quick servo mounts','https://makerworld.com/en/models/423292-sg90-mg90s-servo-motor-quick-mounts','Holds the servo in place when students already have a door linkage or lid design',[
+    'Print the mount','Fix the servo into it','Attach the mount to the wall or floor','Connect the servo arm to the moving part'
+  ])+
+  '<div class="door-section">'+
+    '<div class="best-box"><p><b>Best classroom choice:</b><br>1. Door linkage · 2. Hinged lid · 3. Servo mount as support only</p></div>'+
+    '<div class="advice-box" style="margin-top:6px"><ul>'+
+      '<li>Keep the moving part small and light</li>'+
+      '<li>Test the servo before gluing everything</li>'+
+      '<li>Use one simple mechanism</li>'+
+      '<li>Do not choose a complicated design unless it has been teacher-tested</li>'+
+    '</ul><p style="margin-top:5px"><b>Teacher note:</b> For Year 9, students should copy one tested setup rather than all choosing different mechanisms.</p></div>'+
+  '</div>'+
+  '</div>';
+}
+
+function doorOption(num,type,diff,name,url,use,steps){
+  var diffTag=diff?(' <span style="font-size:9px;color:var(--mu)">— '+diff+'</span>'):'';
+  return '<div class="door-section">'+
+    '<h3>'+num+'. '+type+diffTag+'</h3>'+
+    '<p><b>'+name+'</b></p>'+
+    '<div class="door-link" onclick="window.open(\''+url+'\',\'_blank\')">'+url+'</div>'+
+    '<p><b>Use:</b> '+use+'</p>'+
+    '<p style="margin-top:4px"><b>How to use:</b></p>'+
+    '<ol>'+steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol>'+
+  '</div>';
+}
+
+function buildCertPanel(){
+  return '<div class="cert-card">'+
+    '<div class="cert-icon">🏆</div>'+
+    '<div class="cert-title">Escape Room Builder</div>'+
+    '<div class="cert-sub">You have completed both modules. Enter your name below to get your certificate.</div>'+
+    '<input class="cert-input" id="certName" placeholder="Your name" maxlength="40">'+
+    '<br><button class="cert-btn" onclick="downloadCert()">Download Certificate 📄</button>'+
+    '<div class="cert-note">A PNG image will save to your downloads folder.</div>'+
+  '</div>';
+}
+
+function downloadCert(){
+  var name=document.getElementById('certName').value.trim()||'Student';
+  var cv=document.createElement('canvas');cv.width=800;cv.height=560;
+  var c=cv.getContext('2d');
+  // Background
+  var bg=c.createLinearGradient(0,0,800,560);bg.addColorStop(0,'#161927');bg.addColorStop(1,'#0d0f18');
+  c.fillStyle=bg;c.fillRect(0,0,800,560);
+  // Border
+  c.strokeStyle='#f5a623';c.lineWidth=4;c.strokeRect(20,20,760,520);
+  c.strokeStyle='rgba(245,166,35,0.3)';c.lineWidth=1;c.strokeRect(28,28,744,504);
+  // Icon
+  c.font='64px serif';c.textAlign='center';c.fillText('🏆',400,110);
+  // Title
+  c.fillStyle='#f5a623';c.font='bold 32px system-ui';c.fillText('Escape Room Builder',400,165);
+  // Subtitle
+  c.fillStyle='#6b7280';c.font='16px system-ui';c.fillText('Certificate of Completion',400,195);
+  // Name
+  c.fillStyle='#e8e9ed';c.font='bold 42px system-ui';c.fillText(name,400,275);
+  // Line
+  c.strokeStyle='rgba(245,166,35,0.4)';c.lineWidth=1;c.beginPath();c.moveTo(100,295);c.lineTo(700,295);c.stroke();
+  // Body
+  c.fillStyle='#6b7280';c.font='15px system-ui';
+  c.fillText('has successfully completed the Escape Room Circuit Builder',400,330);
+  c.fillText('Module 1: Lights  ·  Module 2: Servo Door',400,358);
+  // Date
+  c.fillStyle='#374151';c.font='13px system-ui';c.fillText(new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}),400,410);
+  // Bottom
+  c.fillStyle='#22c55e';c.font='bold 14px system-ui';c.fillText('✓ LED circuits  ✓ Servo code  ✓ Full escape room system',400,460);
+  // Download
+  var a=document.createElement('a');a.download=name.replace(/\s+/g,'_')+'_EscapeRoom_Certificate.png';a.href=cv.toDataURL('image/png');a.click();
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE CODE PARSER
+// ═══════════════════════════════════════════════════
+function parseServoCode(code){
+  var err=null;
+  if(!(/\#include\s*<Servo\.h>/.test(code)))
+    err='You need <b>#include &lt;Servo.h&gt;</b> at the very top — the Servo library is not loaded yet.';
+  else if(!(/\.attach\s*\(/.test(code)))
+    err='Call <b>myServo.attach(9)</b> inside setup() to connect the servo to a pin.';
+  else{
+    var pinMatch=code.match(/\.attach\s*\(\s*(\d+)\s*\)/);
+    if(pinMatch){
+      var pin=parseInt(pinMatch[1]);
+      var pwmPins=[3,5,6,9,10,11];
+      if(pwmPins.indexOf(pin)<0)
+        err='Pin '+pin+' does not support PWM — use a ~ pin like 9, 10, or 11.';
+    }
+  }
+  if(!err&&!(/\.write\s*\(/.test(code)))
+    err='Call <b>myServo.write(90)</b> to tell the servo which angle to go to (0–180).';
+  if(!err){
+    var wm=code.match(/\.write\s*\(\s*(\d+)\s*\)/g);
+    if(wm){
+      for(var i=0;i<wm.length;i++){
+        var v=parseInt(wm[i].match(/\d+/)[0]);
+        if(v>180){err='Servo can only go 0–180°. Your value '+v+' is too high.';break;}
+      }
+    }
+  }
+  // Basic syntax checks
+  if(!err){
+    var lines=code.split('\n');
+    for(var j=0;j<lines.length;j++){
+      var ln=lines[j].trim();
+      if(ln&&!ln.startsWith('//')&&!ln.startsWith('#')&&!ln.endsWith('{')&&!ln.endsWith('}')&&!ln.endsWith(';')&&ln.length>2&&!/^(void|int|bool|float|char|Servo)\s/.test(ln)&&!ln.endsWith(')')){
+        err='Line '+(j+1)+': Missing <b>;</b> — every instruction needs a semicolon at the end.';break;
+      }
+    }
+  }
+  // Extract angle
+  var angle=0;
+  var wMatch=code.match(/\.write\s*\(\s*(\d+)\s*\)/);
+  if(wMatch)angle=Math.min(180,parseInt(wMatch[1]));
+  return{err:err,angle:angle};
+}
+
+function onCodeInput(){
+  var code=document.getElementById('codeArea').value;
+  var isBlink=STEPS[cur].id==='m1s4';
+  var result=isBlink?parseBlinkCode(code):parseServoCode(code);
+  var badge=document.getElementById('codeStatusBadge');
+  var errEl=document.getElementById('codeErr');
+  if(result.err){
+    if(badge){badge.className='code-status err';badge.textContent='Fix the error';}
+    if(errEl){errEl.innerHTML=result.err;errEl.classList.add('show');}
+    codeOK=false;
+  } else {
+    if(badge){badge.className='code-status ok';badge.textContent='Code looks good!';}
+    if(errEl)errEl.classList.remove('show');
+    codeOK=true;
+    if(!isBlink){servoAngle=result.angle;draw();}
+    else{blinkOn=true;draw();}
+  }
+}
+
+function parseBlinkCode(code){
+  var err=null;
+  if(!(/pinMode\s*\(/.test(code)))
+    err='Add <b>pinMode(ledPin, OUTPUT)</b> in setup() — this tells Arduino the LED pin is an output.';
+  else if(!(/digitalWrite\s*\(/.test(code)))
+    err='Use <b>digitalWrite(ledPin, HIGH)</b> to turn the LED on and <b>digitalWrite(ledPin, LOW)</b> to turn it off.';
+  else if(!(/delay\s*\(/.test(code)))
+    err='Add <b>delay(500)</b> to pause between on and off — without it the LED blinks too fast to see.';
+  else{
+    var lines=code.split('\n');
+    for(var j=0;j<lines.length;j++){
+      var ln=lines[j].trim();
+      if(ln&&!ln.startsWith('//')&&!ln.startsWith('#')&&!ln.endsWith('{')&&!ln.endsWith('}')&&!ln.endsWith(';')&&ln.length>2&&!/^(void|int|bool|float|char)\s/.test(ln)&&!ln.endsWith(')')){
+        err='Line '+(j+1)+': Missing <b>;</b> — every instruction needs a semicolon at the end.';break;
+      }
+    }
+  }
+  return{err:err};
+}
+
+function onCodeInputFull(){
+  var code=document.getElementById('codeArea').value;
+  // Check for full escape room code essentials
+  var hasInclude=/\#include\s*<Servo\.h>/.test(code);
+  var hasAttach=/\.attach\s*\(/.test(code);
+  var hasWrite=/\.write\s*\(\s*90\s*\)/.test(code);
+  var hasDigitalRead=/digitalRead\s*\(/.test(code);
+  var err=null;
+  if(!hasInclude) err='Add <b>#include &lt;Servo.h&gt;</b> at the top.';
+  else if(!hasAttach) err='Add <b>myServo.attach(10)</b> in setup() — tells Arduino which pin the servo uses.';
+  else if(!hasDigitalRead) err='Use <b>digitalRead(buttonPin)</b> to check if the button is pressed.';
+  else if(!hasWrite) err='Use <b>myServo.write(90)</b> to open the door (90 degrees).';
+  var badge=document.getElementById('codeStatusBadge');
+  var errEl=document.getElementById('codeErr');
+  if(err){
+    if(badge){badge.className='code-status err';badge.textContent='Fix the error';}
+    if(errEl){errEl.innerHTML=err;errEl.classList.add('show');}
+    codeOK=false;
+  } else {
+    if(badge){badge.className='code-status ok';badge.textContent='Code looks good!';}
+    if(errEl)errEl.classList.remove('show');
+    codeOK=true;
+  }
+  updateDualStatus();
+  if(codeOK&&circuitOK)setTimeout(triggerOK,400);
+}
+
+function updateDualStatus(){
+  var pc=document.getElementById('pillCircuit');
+  var pk=document.getElementById('pillCode');
+  if(pc){pc.className='pill'+(circuitOK?' done':' active');pc.textContent=circuitOK?'✓ Circuit':'⬡ Circuit';}
+  if(pk){pk.className='pill'+(codeOK?' done':' active');pk.textContent=codeOK?'✓ Code':'⬡ Code';}
+}
+
+// ═══════════════════════════════════════════════════
+// COMPONENT PLACEMENT
+// ═══════════════════════════════════════════════════
+function placeComps(){
+  var sc=Math.min(CW,CH)/560;
+  var aw=cl(76,sc*104,136),ah=cl(124,sc*160,196);
+  var lw=cl(20,sc*25,32),lL=cl(28,sc*40,52),lS=cl(13,sc*19,27),bH=cl(26,sc*36,46);
+  var rw=cl(50,sc*68,84),rh=cl(14,sc*19,24);
+  var btw=cl(18,sc*22,30),bth=cl(18,sc*22,30);
+  var svw=cl(44,sc*56,74),svh=cl(30,sc*40,52);
+  var cx=CW/2,cy=CH/2;
+  if(!crot.arduino)crot={arduino:0,resistor:0,led:0,button:0,servo:0};
+  comps={};
+  var bld=STEPS[cur].bld;
+  if(bld==='b1'||bld==='b2'||bld==='b3'||bld==='b8'){
+    comps.arduino={t:'ard',x:cx-CW*.38,y:cy-ah/2,w:aw,h:ah};
+    comps.resistor={t:'res',x:cx-rw/2,y:cy-ah*.40,w:rw,h:rh};
+    comps.led={t:'led',x:cx+CW*.16,y:cy-(lL+bH)/2,w:lw,lL:lL,lS:lS,bH:bH};
+  }
+  if(bld==='b2'||bld==='b8')
+    comps.button={t:'btn',x:cx+CW*.05,y:cy-bth/2,w:btw,h:bth};
+  // M2S3 and M2S2: servo only (no LED/resistor/button)
+  if(bld==='b5'){
+    comps.arduino={t:'ard',x:cx-CW*.35,y:cy-ah/2,w:aw,h:ah};
+    comps.servo={t:'srv',x:cx+CW*.1,y:cy-svh/2,w:svw,h:svh};
+  }
+  // M2S4: full combined
+  if(bld==='b8'){
+    comps.servo={t:'srv',x:cx+CW*.32,y:cy-svh/2,w:svw,h:svh};
+    // arduino already placed above
+    // shift arduino left
+    comps.arduino.x=cx-CW*.44;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// NODES
+// ═══════════════════════════════════════════════════
+function rotPt(p,cx,cy,deg){var r=deg*Math.PI/180,dx=p.x-cx,dy=p.y-cy;return{x:cx+dx*Math.cos(r)-dy*Math.sin(r),y:cy+dx*Math.sin(r)+dy*Math.cos(r)};}
+function getNodes(){
+  var ns={},a=comps.arduino,r=comps.resistor,l=comps.led,b=comps.button,sv=comps.servo;
+  if(a){
+    ns.a5v ={x:a.x+a.w,y:a.y+a.h*.24,lbl:'5V',    col:'#ef4444',tip:'Power — start here'};
+    ns.agnd={x:a.x+a.w,y:a.y+a.h*.76,lbl:'GND',   col:'#3b82f6',tip:'Ground — end of loop'};
+    ns.p2  ={x:a.x+a.w,y:a.y+a.h*.48,lbl:'Pin 2', col:'#a78bfa',tip:'Digital input for button'};
+    ns.p9  ={x:a.x+a.w,y:a.y+a.h*.38,lbl:'Pin 9~',col:'#f97316',tip:'PWM — servo / blink'};
+    ns.p10 ={x:a.x+a.w,y:a.y+a.h*.55,lbl:'Pin 10~',col:'#f97316',tip:'PWM — servo (full circuit)'};
+  }
+  if(r){var rcx=r.x+r.w/2,rcy=r.y+r.h/2,rot=crot.resistor||0;var ra=rotPt({x:r.x,y:rcy},rcx,rcy,rot),rb=rotPt({x:r.x+r.w,y:rcy},rcx,rcy,rot);ns.rA={x:ra.x,y:ra.y,lbl:'Resistor in',col:'#ef4444',tip:'Connect 5V here'};ns.rB={x:rb.x,y:rb.y,lbl:'Resistor out',col:'#f97316',tip:'Continue to LED+'};}
+  if(l){var th=l.lL+l.bH+l.lS,lcx=l.x+l.w/2,lcy=l.y+th/2,lr=crot.led||0;var lp=rotPt({x:lcx-l.w*.28,y:l.y},lcx,lcy,lr),ln=rotPt({x:lcx+l.w*.28,y:l.y+th},lcx,lcy,lr);ns.lP={x:lp.x,y:lp.y,lbl:'LED+ long leg',col:'#ef4444',tip:'Long leg = anode (+)'};ns.lN={x:ln.x,y:ln.y,lbl:'LED– short leg',col:'#3b82f6',tip:'Short leg = cathode (–)'};}
+  if(b){var bcx=b.x+b.w/2,bcy=b.y+b.h/2,br=crot.button||0;var ba=rotPt({x:b.x,y:bcy},bcx,bcy,br),bb=rotPt({x:b.x+b.w,y:bcy},bcx,bcy,br);ns.bA={x:ba.x,y:ba.y,lbl:'Button A',col:'#a78bfa',tip:'→ Pin 2'};ns.bB={x:bb.x,y:bb.y,lbl:'Button B',col:'#3b82f6',tip:'→ GND'};}
+  if(sv){ns.sR={x:sv.x,y:sv.y+sv.h*.25,lbl:'Servo Red',col:'#ef4444',tip:'5V power'};ns.sB={x:sv.x,y:sv.y+sv.h*.75,lbl:'Servo Black',col:'#3b82f6',tip:'GND'};ns.sO={x:sv.x,y:sv.y+sv.h*.5,lbl:'Servo Orange',col:'#f97316',tip:'Signal → PWM pin'};}
+  var allow=({b1:{a5v:1,agnd:1,rA:1,rB:1,lP:1,lN:1},b2:{a5v:1,agnd:1,rA:1,rB:1,lP:1,lN:1,p2:1,bA:1,bB:1},b3:{a5v:1,agnd:1,rA:1,rB:1,lP:1,lN:1,p9:1},b5:{a5v:1,agnd:1,p9:1,sR:1,sB:1,sO:1},b8:{a5v:1,agnd:1,rA:1,rB:1,lP:1,lN:1,p2:1,bA:1,bB:1,p10:1,sR:1,sB:1,sO:1}})[STEPS[cur].bld]||{};
+  var out={};for(var k in ns){if(allow[k])out[k]=ns[k];}
+  return out;
+}
+
+// ═══════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════
+function draw(){
+  var step=STEPS[cur];
+  if(step.type==='door'||step.type==='cert'||step.type==='info')return;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,mc.width,mc.height);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.save();ctx.translate(camX,camY);ctx.scale(camZ,camZ);
+  drawGrid();
+  for(var k in comps)drawComp(comps[k],k);
+  var ns=getNodes();drawWires(ns);drawNodes(ns);
+  ctx.restore();
+}
+function drawGrid(){var s=30,x0=Math.floor(-camX/camZ/s-1)*s,y0=Math.floor(-camY/camZ/s-1)*s;ctx.strokeStyle='rgba(0,0,0,.07)';ctx.lineWidth=1/camZ;ctx.beginPath();for(var x=x0;x<x0+CW/camZ+s*3;x+=s){ctx.moveTo(x,y0);ctx.lineTo(x,y0+CH/camZ+s*3);}for(var y=y0;y<y0+CH/camZ+s*3;y+=s){ctx.moveTo(x0,y);ctx.lineTo(x0+CW/camZ+s*3,y);}ctx.stroke();}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+function drawComp(c,key){ctx.save();var cx,cy,th;if(c.t==='led'){th=c.lL+c.bH+c.lS;cx=c.x+c.w/2;cy=c.y+th/2;}else{cx=c.x+c.w/2;cy=c.y+c.h/2;}ctx.translate(cx,cy);ctx.rotate((crot[key]||0)*Math.PI/180);if(c.t==='led'){ctx.translate(-c.w/2,-th/2);drawLED(c);}if(c.t==='ard'){ctx.translate(-c.w/2,-c.h/2);drawArduino(c);}if(c.t==='res'){ctx.translate(-c.w/2,-c.h/2);drawResistor(c);}if(c.t==='btn'){ctx.translate(-c.w/2,-c.h/2);drawButton(c);}if(c.t==='srv'){ctx.translate(-c.w/2,-c.h/2);drawServo(c);}ctx.restore();}
+
+function drawArduino(a){var w=a.w,h=a.h;ctx.fillStyle='#1a7a35';ctx.strokeStyle='#22a040';ctx.lineWidth=1.5;rr(0,0,w,h,5);ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.moveTo(w*.1,0);ctx.lineTo(w*.55,0);ctx.lineTo(w*.35,h);ctx.lineTo(0,h);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(200,140,20,.18)';ctx.lineWidth=.6;[[w*.2,h*.25,w*.8,h*.25],[w*.1,h*.55,w*.9,h*.55]].forEach(function(l){ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();});ctx.fillStyle='#111';ctx.strokeStyle='#222';ctx.lineWidth=.6;rr(w*.14,h*.28,w*.65,h*.28,3);ctx.fill();ctx.stroke();ctx.strokeStyle='#777';ctx.lineWidth=.6;for(var i=0;i<5;i++){var ly=h*.31+i*h*.054;ctx.beginPath();ctx.moveTo(w*.14,ly);ctx.lineTo(w*.06,ly);ctx.stroke();ctx.beginPath();ctx.moveTo(w*.79,ly);ctx.lineTo(w*.87,ly);ctx.stroke();}ctx.fillStyle='rgba(255,255,255,.3)';ctx.beginPath();ctx.arc(w*.19,h*.31,w*.023,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.28)';ctx.font='bold '+cl(3,w*.075,7)+'px system-ui';ctx.textAlign='center';ctx.fillText('ATmega328P',w*.46,h*.43);var rbg=ctx.createRadialGradient(w*.13,h*.09,0,w*.16,h*.1,w*.09);rbg.addColorStop(0,'#ff4444');rbg.addColorStop(1,'#991111');ctx.fillStyle=rbg;ctx.strokeStyle='#cc1111';ctx.lineWidth=.5;rr(w*.08,h*.07,w*.18,w*.13,2);ctx.fill();ctx.stroke();ctx.fillStyle='#1a1a1a';ctx.strokeStyle='#333';ctx.lineWidth=.8;rr(w*.04,h*.82,w*.22,h*.12,3);ctx.fill();ctx.stroke();ctx.fillStyle='#9a9a9a';ctx.strokeStyle='#777';ctx.lineWidth=.8;rr(w*.3,h*.88,w*.42,h*.1,2);ctx.fill();ctx.stroke();ctx.fillStyle='#666';rr(w*.33,h*.9,w*.36,h*.06,1);ctx.fill();for(var j=0;j<9;j++){ctx.fillStyle='#111';ctx.strokeStyle='#2a2a2a';ctx.lineWidth=.4;rr(w*.86,h*.1+j*h*.09,w*.14,h*.074,1);ctx.fill();ctx.stroke();ctx.fillStyle='#c0c0c0';ctx.fillRect(w*.89,h*.125+j*h*.09,w*.07,h*.025);}[[w*.76,h*.86,'#22c55e'],[w*.68,h*.86,'#f59e0b'],[w*.60,h*.86,'#3b82f6']].forEach(function(d){ctx.fillStyle=d[2];ctx.beginPath();ctx.arc(d[0],d[1],w*.05,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';ctx.beginPath();ctx.arc(d[0]-w*.012,d[1]-w*.012,w*.014,0,Math.PI*2);ctx.fill();});ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='bold '+cl(3,w*.08,7)+'px system-ui';ctx.textAlign='center';ctx.fillText('ARDUINO UNO',w*.46,h*.15);ctx.font='bold '+cl(3,w*.07,6.5)+'px system-ui';ctx.textAlign='right';ctx.fillStyle='#fca5a5';ctx.fillText('5V',w*.83,h*.25);ctx.fillStyle='#93c5fd';ctx.fillText('GND',w*.83,h*.77);ctx.fillStyle='#c4b5fd';ctx.fillText('2',w*.83,h*.497);ctx.fillStyle='#fdba74';ctx.fillText('~9',w*.83,h*.397);ctx.fillStyle='#fdba74';ctx.fillText('~10',w*.83,h*.567);}
+
+function drawResistor(r){var w=r.w,h=r.h;ctx.strokeStyle='#d0d0d0';ctx.lineWidth=cl(1,h*.5,1.8);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,h/2);ctx.lineTo(w*.16,h/2);ctx.stroke();ctx.beginPath();ctx.moveTo(w*.84,h/2);ctx.lineTo(w,h/2);ctx.stroke();var bg=ctx.createLinearGradient(w*.16,0,w*.16,h);bg.addColorStop(0,'#f0e0a0');bg.addColorStop(.35,'#f8eeb8');bg.addColorStop(.65,'#e8d890');bg.addColorStop(1,'#c8b870');ctx.fillStyle=bg;ctx.strokeStyle='#a89848';ctx.lineWidth=.9;rr(w*.16,h*.05,w*.68,h*.9,3);ctx.fill();ctx.stroke();[{c:'#dc2626',x:.23},{c:'#dc2626',x:.34},{c:'#7c3a10',x:.45},{c:'#d4a017',x:.61}].forEach(function(b){var g=ctx.createLinearGradient(w*b.x,h*.05,w*b.x,h*.95);g.addColorStop(0,b.c+'cc');g.addColorStop(.4,b.c);g.addColorStop(1,b.c+'88');ctx.fillStyle=g;ctx.fillRect(w*b.x,h*.05,w*.08,h*.9);});ctx.fillStyle='#fcd34d';ctx.font='bold '+cl(5,w*.11,9)+'px system-ui';ctx.textAlign='center';ctx.fillText('220\u03A9',w/2,h+cl(8,h*.75,12));}
+
+function drawLED(l){var w=l.w,lL=l.lL,lS=l.lS,bH=l.bH,bodyTop=lL,bodyBot=lL+bH,lcx=w/2,longX=lcx-w*.28,shortX=lcx+w*.28;var lit=stepOK||(STEPS[cur].id==='m1s3'&&blinkOn);if(lit){var g=ctx.createRadialGradient(lcx,bodyTop+bH*.4,2,lcx,bodyTop+bH*.4,w*3.2);g.addColorStop(0,'rgba(255,60,60,.6)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(lcx,bodyTop+bH*.4,w*3.2,0,Math.PI*2);ctx.fill();}ctx.strokeStyle='#d0d0d0';ctx.lineWidth=cl(1.2,w*.07,2.2);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(longX,0);ctx.lineTo(longX,bodyTop);ctx.stroke();ctx.beginPath();ctx.moveTo(shortX,bodyBot);ctx.lineTo(shortX,bodyBot+lS);ctx.stroke();ctx.fillStyle='#111';ctx.fillRect(w*.06,bodyTop+bH*.62,w*.88,bH*.34);ctx.fillStyle='#060606';ctx.fillRect(shortX-w*.16,bodyTop+bH*.62,w*.18,bH*.34);var dg=ctx.createRadialGradient(lcx-w*.12,bodyTop+bH*.1,w*.04,lcx,bodyTop+bH*.3,w*.47);if(lit){dg.addColorStop(0,'rgba(255,220,220,.95)');dg.addColorStop(.3,'rgba(255,80,80,.9)');dg.addColorStop(1,'rgba(180,20,20,.85)');}else{dg.addColorStop(0,'rgba(200,80,80,.7)');dg.addColorStop(.4,'rgba(150,15,15,.75)');dg.addColorStop(1,'rgba(90,8,8,.82)');}ctx.fillStyle=dg;ctx.strokeStyle=lit?'rgba(255,110,110,.8)':'rgba(130,25,25,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(lcx,bodyTop+bH*.3,w*.46,Math.PI,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,255,255,.22)';ctx.beginPath();ctx.arc(lcx-w*.12,bodyTop+bH*.14,w*.14,0,Math.PI*2);ctx.fill();var fs=cl(6,w*.28,10);ctx.font='bold '+fs+'px system-ui';ctx.textAlign='center';ctx.fillStyle='#ef4444';ctx.fillText('+',longX,0-fs*.4);ctx.fillStyle='#3b82f6';ctx.fillText('\u2013',shortX,bodyBot+lS+fs+2);ctx.font=cl(4,w*.18,7)+'px system-ui';ctx.fillStyle='rgba(239,68,68,.55)';ctx.fillText('long',longX,0-fs*1.55);ctx.fillStyle='rgba(59,130,246,.55)';ctx.fillText('short',shortX,bodyBot+lS+fs+cl(4,w*.18,7)+3);ctx.fillStyle='#f87171';ctx.font=cl(5,w*.24,8)+'px system-ui';ctx.textAlign='center';ctx.fillText('LED',lcx,bodyTop-fs-2);}
+
+function drawButton(b){var w=b.w,h=b.h;ctx.fillStyle='#1a5c2a';ctx.strokeStyle='#22803a';ctx.lineWidth=.8;rr(0,0,w,h,2);ctx.fill();ctx.stroke();[[-.14,h*.28],[1.14,h*.28],[-.14,h*.58],[1.14,h*.58]].forEach(function(p){ctx.fillStyle='#c8c8c8';ctx.strokeStyle='#aaa';ctx.lineWidth=.4;ctx.fillRect(w*p[0],p[1],w*.16,h*.15);ctx.strokeRect(w*p[0],p[1],w*.16,h*.15);});ctx.fillStyle='#1a1a1a';ctx.strokeStyle='#2a2a2a';ctx.lineWidth=.7;rr(w*.07,h*.07,w*.86,h*.86,2);ctx.fill();ctx.stroke();var cg=ctx.createRadialGradient(w*.4,h*.38,w*.02,w*.5,h*.5,w*.3);cg.addColorStop(0,'#ee4444');cg.addColorStop(1,'#991111');ctx.fillStyle=cg;ctx.strokeStyle='#cc2222';ctx.lineWidth=.6;ctx.beginPath();ctx.arc(w*.5,h*.5,w*.31,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,200,200,.2)';ctx.beginPath();ctx.arc(w*.38,h*.37,w*.11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fcd34d';ctx.font='bold '+cl(4,w*.18,7)+'px system-ui';ctx.textAlign='center';ctx.fillText('BTN',w/2,h+9);}
+
+function drawServo(sv){
+  var w=sv.w,h=sv.h;
+  var sg=ctx.createLinearGradient(0,0,0,h);sg.addColorStop(0,'#6b7280');sg.addColorStop(.5,'#4b5563');sg.addColorStop(1,'#374151');
+  ctx.fillStyle=sg;ctx.strokeStyle='#1f2937';ctx.lineWidth=1.2;rr(0,0,w,h,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#4b5563';ctx.strokeStyle='#374151';ctx.lineWidth=.8;ctx.fillRect(-w*.16,h*.1,w*.16,h*.8);ctx.strokeRect(-w*.16,h*.1,w*.16,h*.8);ctx.fillRect(w,h*.1,w*.16,h*.8);ctx.strokeRect(w,h*.1,w*.16,h*.8);
+  [[-w*.08,h*.25],[-w*.08,h*.75],[w*1.08,h*.25],[w*1.08,h*.75]].forEach(function(p){ctx.fillStyle='#1f2937';ctx.strokeStyle='#374151';ctx.lineWidth=.5;ctx.beginPath();ctx.arc(p[0],p[1],w*.05,0,Math.PI*2);ctx.fill();ctx.stroke();});
+  ctx.fillStyle='#374151';ctx.strokeStyle='#1f2937';ctx.lineWidth=.8;rr(w*.14,0,w*.72,h*.44,3);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#1f2937';ctx.strokeStyle='#2a2a2a';ctx.lineWidth=.5;rr(w*.22,h*.07,w*.56,h*.28,2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#c0c0c0';ctx.strokeStyle='#888';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(w*.5,h*.22,h*.12,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#888';ctx.beginPath();ctx.arc(w*.5,h*.22,h*.06,0,Math.PI*2);ctx.fill();
+  // Animated arm based on servoAngle
+  var armAngle=(servoAngle-90)*Math.PI/180;
+  ctx.save();ctx.translate(w*.5,h*.22);
+  ctx.fillStyle='#e8e8e8';ctx.strokeStyle='#ccc';ctx.lineWidth=.8;
+  ctx.save();ctx.rotate(armAngle);
+  rr(-h*.07,-h*.34,h*.14,h*.34,2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#ccc';ctx.beginPath();ctx.arc(0,-h*.3,h*.055,0,Math.PI*2);ctx.fill();
+  ctx.restore();ctx.restore();
+  [[h*.26,'#ef4444'],[h*.5,'#2a2a2a'],[h*.74,'#f97316']].forEach(function(d){ctx.strokeStyle=d[1];ctx.lineWidth=2.2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,d[0]);ctx.lineTo(-6,d[0]);ctx.stroke();});
+  ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='bold '+cl(4,w*.088,7)+'px system-ui';ctx.textAlign='center';ctx.fillText('SG90',w*.5,h*.82);
+  ctx.fillStyle='#fbbf24';ctx.font='bold '+cl(4,w*.088,7)+'px system-ui';ctx.fillText('Servo',w*.5,h+11);
+}
+
+// ── WIRES & NODES ─────────────────────────────────
+function wCol(a,b){if(a==='a5v'||b==='a5v'||a==='rA'||b==='rA'||a==='sR'||b==='sR')return'#ef4444';if(a==='agnd'||b==='agnd'||a==='lN'||b==='lN'||a==='sB'||b==='sB'||a==='bB'||b==='bB')return'#3b82f6';if(a==='p9'||b==='p9'||a==='sO'||b==='sO'||a==='p10'||b==='p10')return'#f97316';if(a==='p2'||b==='p2'||a==='bA'||b==='bA')return'#a78bfa';return'#f5a623';}
+function route(ax,ay,bx,by){var paths=[[[ax,ay],[bx,ay],[bx,by]],[[ax,ay],[ax,by],[bx,by]]];function score(pts){var s=0;for(var i=0;i<pts.length-1;i++){var p1=pts[i],p2=pts[i+1];for(var k in comps){var c=comps[k],ch=c.t==='led'?(c.lL+c.bH+c.lS):c.h;if(segRect(p1[0],p1[1],p2[0],p2[1],c.x-4,c.y-4,c.w+8,ch+8))s+=100;}}return s;}return score(paths[0])<=score(paths[1])?paths[0]:paths[1];}
+function segRect(x1,y1,x2,y2,rx,ry,rw,rh){var ps=[[rx,ry],[rx+rw,ry],[rx+rw,ry+rh],[rx,ry+rh]];for(var i=0;i<4;i++){var a=ps[i],b=ps[(i+1)%4];if(segSeg(x1,y1,x2,y2,a[0],a[1],b[0],b[1]))return true;}return x1>=rx&&x1<=rx+rw&&y1>=ry&&y1<=ry+rh;}
+function segSeg(x1,y1,x2,y2,x3,y3,x4,y4){var d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);if(Math.abs(d)<1e-10)return false;var t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/d,u=-((x1-x2)*(y1-y3)-(y1-y2)*(x1-x3))/d;return t>=0&&t<=1&&u>=0&&u<=1;}
+function pdist(px,py,x1,y1,x2,y2){var dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy;if(!l)return Math.hypot(px-x1,py-y1);var t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/l));return Math.hypot(px-(x1+t*dx),py-(y1+t*dy));}
+
+function drawWires(ns){ctx.lineCap='round';ctx.lineJoin='round';ctx.setLineDash([]);wires.forEach(function(w){var na=ns[w.a],nb=ns[w.b];if(!na||!nb)return;var col=wCol(w.a,w.b);ctx.strokeStyle=col;ctx.lineWidth=2.5/camZ;var pts=route(na.x,na.y,nb.x,nb.y);ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();var last=pts[pts.length-1],prev=pts[pts.length-2],s=6/camZ;var ang=Math.atan2(last[1]-prev[1],last[0]-prev[0]);ctx.save();ctx.translate(last[0],last[1]);ctx.rotate(ang);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-s*1.5,-s*.55);ctx.lineTo(-s*1.5,s*.55);ctx.closePath();ctx.fill();ctx.restore();});if(ws&&hovN&&ws!==hovN){var na=getNodes()[ws],nb=getNodes()[hovN];if(na&&nb){ctx.strokeStyle='rgba(245,166,35,.42)';ctx.lineWidth=2/camZ;ctx.setLineDash([6/camZ,4/camZ]);var mx=(na.x+nb.x)/2;ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(mx,na.y);ctx.lineTo(mx,nb.y);ctx.lineTo(nb.x,nb.y);ctx.stroke();ctx.setLineDash([]);}}}
+
+function drawNodes(ns){var R=8/camZ;for(var k in ns){var n=ns[k],conn=wires.some(function(w){return w.a===k||w.b===k;}),hov=hovN===k,sel=ws===k;ctx.beginPath();ctx.arc(n.x,n.y,hov||sel?R*1.6:R,0,Math.PI*2);ctx.fillStyle=sel?'#f5a623':conn?n.col:'#12151f';ctx.fill();ctx.strokeStyle=conn?n.col:hov?'#f5a623':n.col+'88';ctx.lineWidth=1.5/camZ;ctx.stroke();if(!conn&&!sel){ctx.beginPath();ctx.arc(n.x,n.y,R+5/camZ,0,Math.PI*2);ctx.strokeStyle=n.col+'30';ctx.lineWidth=1/camZ;ctx.stroke();}}}
+
+// ── HIT TESTING ───────────────────────────────────
+function nodeAt(wx,wy){var ns=getNodes(),R=14/camZ;for(var k in ns){var n=ns[k];if(Math.hypot(wx-n.x,wy-n.y)<R)return k;}return null;}
+function compAt(wx,wy){for(var k in comps){var c=comps[k],ch=c.t==='led'?(c.lL+c.bH+c.lS):c.h,cx=c.x+c.w/2,cy=c.y+ch/2,lp=rotPt({x:wx,y:wy},cx,cy,-(crot[k]||0));if(lp.x>=c.x&&lp.x<=c.x+c.w&&lp.y>=c.y&&lp.y<=c.y+ch)return k;}return null;}
+function wireAt(wx,wy){var ns=getNodes(),th=10/camZ;for(var i=wires.length-1;i>=0;i--){var w=wires[i],na=ns[w.a],nb=ns[w.b];if(!na||!nb)continue;var pts=route(na.x,na.y,nb.x,nb.y);for(var j=0;j<pts.length-1;j++){if(pdist(wx,wy,pts[j][0],pts[j][1],pts[j+1][0],pts[j+1][1])<th)return i;}}return -1;}
+
+// ── INPUT ─────────────────────────────────────────
+function gp(e){var r=mc.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};}
+mc.addEventListener('mousedown',onDn);mc.addEventListener('touchstart',function(e){e.preventDefault();onDn(e);},{passive:false});
+mc.addEventListener('mousemove',onMv);mc.addEventListener('touchmove',function(e){e.preventDefault();onMv(e);},{passive:false});
+mc.addEventListener('mouseup',onUp);mc.addEventListener('touchend',onUp);
+mc.addEventListener('wheel',function(e){e.preventDefault();var s=gp(e);zAt(s.x,s.y,e.deltaY<0?1.1:0.91);},{passive:false});
+
+function onDn(e){var s=gp(e),w=s2w(s.x,s.y),wx=w.x,wy=w.y;var step=STEPS[cur];if(step.type==='door'||step.type==='cert'||step.type==='info')return;if(tool==='pan'){isPan=true;panS=s;camS={x:camX,y:camY};mc.style.cursor='grabbing';return;}if(tool==='rotate'){var k=compAt(wx,wy);if(k){crot[k]=((crot[k]||0)+90)%360;draw();}return;}if(tool==='erase'){var i=wireAt(wx,wy);if(i>=0){wires.splice(i,1);stepOK=false;circuitOK=false;document.getElementById('sov').classList.remove('show');runChk();draw();}return;}if(tool==='move'){var ck=compAt(wx,wy);if(ck){drag=ck;doff={x:wx-comps[ck].x,y:wy-comps[ck].y};}return;}if(tool==='wire'){var n=nodeAt(wx,wy);if(n){if(!ws)ws=n;else{if(ws!==n){wires=wires.filter(function(w2){return!((w2.a===ws&&w2.b===n)||(w2.a===n&&w2.b===ws));});wires.push({a:ws,b:n});var ok=runChk();if(ok){if(step.type==='splitfull'){circuitOK=true;updateDualStatus();if(codeOK&&circuitOK)setTimeout(triggerOK,400);}else setTimeout(triggerOK,300);}}ws=null;}draw();return;}ws=null;draw();}}
+function onMv(e){var s=gp(e),w=s2w(s.x,s.y),wx=w.x,wy=w.y;if(isPan){camX=camS.x+(s.x-panS.x);camY=camS.y+(s.y-panS.y);draw();return;}if(drag){comps[drag].x=wx-doff.x;comps[drag].y=wy-doff.y;draw();return;}var step=STEPS[cur];if(step.type==='door'||step.type==='cert'||step.type==='info')return;var n=nodeAt(wx,wy);if(n!==hovN){hovN=n;draw();}if(n){var nd=getNodes()[n];if(nd)showNtip(s.x,s.y,nd.lbl,nd.tip);}else hideNtip();if(tool==='rotate')mc.style.cursor=compAt(wx,wy)?'cell':'default';else if(tool==='move')mc.style.cursor=compAt(wx,wy)?'grab':'default';else mc.style.cursor=tool==='wire'?'crosshair':tool==='erase'?'not-allowed':tool==='pan'?'grab':'default';}
+function onUp(){if(isPan){isPan=false;}drag=null;}
+
+// ── CHECK LOGIC ───────────────────────────────────
+function hw(a,b){return wires.some(function(w){return(w.a===a&&w.b===b)||(w.a===b&&w.b===a);});}
+function tick(ic,nm,ok){var el=document.getElementById(ic),n=document.getElementById(nm);if(!el||!n)return;el.classList.toggle('lit',ok);n.textContent=ok?'✓':n.id[1];n.classList.toggle('ok',ok);}
+function runChk(){
+  var f={
+    c1:function(){var r1=hw('a5v','rA'),r2=hw('rB','lP'),r3=hw('lN','agnd');tick('ic2','n2',r1);tick('ic3','n3',r2);tick('ic4','n4',r3);return r1&&r2&&r3;},
+    c2:function(){var r1=hw('a5v','rA')&&hw('rB','lP')&&hw('lN','agnd'),r2=hw('bA','p2'),r3=hw('bB','agnd');tick('ic2','n2',r1);tick('ic3','n3',r2);tick('ic4','n4',r3);return r1&&r2&&r3;},
+    c3:function(){var r1=hw('a5v','rA')&&hw('rB','lP')&&hw('lN','agnd'),r2=hw('p9','lP')||hw('p9','rB');tick('ic2','n2',r1);tick('ic3','n3',r2);return r1&&r2;},
+    c5:function(){var r1=hw('a5v','sR'),r2=hw('agnd','sB'),r3=hw('p9','sO');tick('ic2','n2',r1);tick('ic3','n3',r2);tick('ic4','n4',r3);return r1&&r2&&r3;},
+    c_code_blink:function(){return codeOK;},
+    c_code3:function(){return codeOK;},
+    c8:function(){var r1=hw('a5v','rA')&&hw('rB','lP')&&hw('lN','agnd'),r2=hw('bA','p2')&&hw('bB','agnd'),r3=hw('a5v','sR')&&hw('agnd','sB')&&hw('p10','sO');tick('ic2','n2',r1);tick('ic3','n3',r2);tick('ic4','n4',r3);return r1&&r2&&r3;}
+  }[STEPS[cur].chk];
+  return f?f():false;
+}
+function doCheck(){if(runChk())triggerOK();else showToast('Not complete — try a Hint','warn');}
+function doHint(){var h=STEPS[cur].hints||[];showToast('💡 '+h[hintI%h.length],'');hintI++;}
+function triggerOK(){if(stepOK)return;stepOK=true;if(STEPS[cur].id==='m1s3')startBlink();else draw();setTimeout(function(){buildSuccess();document.getElementById('sov').classList.add('show');},400);}
+
+// ── BLINK ─────────────────────────────────────────
+var blinkSeq=[200,200,200,200,200,200,400,600,200,600,200,600,200,400,200,200,200,200,200,200,1000];
+function startBlink(){if(blinkTmr)clearTimeout(blinkTmr);blinkIdx=0;blinkPh=true;schedBlink();}
+function schedBlink(){blinkOn=blinkPh;blinkPh=!blinkPh;blinkIdx++;draw();blinkTmr=setTimeout(schedBlink,blinkSeq[blinkIdx%blinkSeq.length]);}
+
+// ── TOAST / NTIP ──────────────────────────────────
+function showToast(m,t){var el=document.getElementById('toast');el.textContent=m;el.className='toast '+(t||'');el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},3500);}
+function showNtip(sx,sy,l,h){var t=document.getElementById('ntip');t.innerHTML='<b style="color:var(--a)">'+l+'</b><br><span style="color:var(--mu)">'+h+'</span>';t.style.left=Math.min(sx+14,CW-175)+'px';t.style.top=Math.max(sy-44,4)+'px';t.classList.add('show');}
+function hideNtip(){document.getElementById('ntip').classList.remove('show');}
+
+// ═══════════════════════════════════════════════════
+// SUCCESS CARD + TINKERCAD ILLUSTRATION
+// ═══════════════════════════════════════════════════
+function buildSuccess(){
+  var step=STEPS[cur],sc=document.getElementById('scard');
+  sc.style.borderColor=step.mod===2?'#7c3aed':'var(--ok)';
+  var modSteps=STEPS.filter(function(s){return s.mod===step.mod;}).length;
+  var nextLbl=cur<STEPS.length-1?'Continue: '+STEPS[cur+1].title+' →':'Finish';
+  var html=
+    '<button class="sclose" onclick="document.getElementById(\'sov\').classList.remove(\'show\')">✕ Keep building</button>'+
+    '<div class="scard-top">'+
+      '<div style="font-size:36px">'+(step.mod===2?'⚙️':'💡')+'</div>'+
+      '<div class="sbadge">✓ Step '+step.ms+' of '+modSteps+' done</div>'+
+      '<div class="stitle2">'+(step.sTitle||'Complete!')+'</div>'+
+      '<div class="sbody">'+(step.sBody||'')+'</div>'+
+      (step.escapeMsg?'<div class="sescape">🔐 '+step.escapeMsg+'</div>':'')+
+    '</div>'+
+    (step.photos?'<div class="tc-section"><div class="tc-lbl">Now recreate this in TinkerCad</div><canvas class="tc-canvas" id="tcCv"></canvas><div class="tc-note">Open TinkerCad → Circuits → New Circuit → wire it exactly as shown above.</div></div>':'')+
+    (step.code?'<div class="code-block"><div class="code-lbl">Arduino code for this step — read and type it yourself</div><pre style="user-select:none;-webkit-user-select:none" oncontextmenu="return false">'+sHL(step.code)+'</pre></div>':'')+
+    '<button class="snext" onclick="nextStep()">'+nextLbl+'</button>';
+  sc.innerHTML=html;
+  if(step.photos)setTimeout(function(){drawTC(cur);},60);
+}
+
+function sHL(c){return c.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(\/\/[^\n]*)/g,'<span class="cc-cm">$1</span>').replace(/\b(void|int|bool|for|if|else|include)\b/g,'<span class="cc-kw">$1</span>').replace(/\b(HIGH|LOW|OUTPUT|INPUT_PULLUP|INPUT)\b/g,'<span class="cc-val">$1</span>').replace(/\b(setup|loop|pinMode|digitalWrite|digitalRead|delay|attach|write|read)\b/g,'<span class="cc-fn">$1</span>').replace(/"([^"]*)"/g,'<span class="cc-str">"$1"</span>').replace(/\b(\d+)\b/g,'<span class="cc-num">$1</span>');}
+
+// TinkerCad illustration — accurate dark UI style
+function drawTC(si){
+  var cv=document.getElementById('tcCv');if(!cv)return;
+  var pw=cv.parentElement.offsetWidth,ph=Math.round(pw*.68);
+  cv.width=pw*DPR;cv.height=ph*DPR;cv.style.height=ph+'px';
+  var c=cv.getContext('2d'),s=pw/320;
+  c.setTransform(DPR,0,0,DPR,0,0);
+  var W=pw,H=ph;
+  function rP(x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.arcTo(x+w,y,x+w,y+r,r);c.lineTo(x+w,y+h-r);c.arcTo(x+w,y+h,x+w-r,y+h,r);c.lineTo(x+r,y+h);c.arcTo(x,y+h,x,y+h-r,r);c.lineTo(x,y+r);c.arcTo(x,y,x+r,y,r);c.closePath();}
+  // BG
+  c.fillStyle='#1c1f2e';c.fillRect(0,0,W,H);
+  c.strokeStyle='rgba(255,255,255,0.055)';c.lineWidth=.5;
+  for(var gx=10;gx<W;gx+=18)for(var gy=10;gy<H;gy+=18){c.beginPath();c.arc(gx,gy,1,0,Math.PI*2);c.stroke();}
+  // Top bar
+  c.fillStyle='#0f111a';c.fillRect(0,0,W,13*s);
+  c.fillStyle='#0accc5';c.font='bold '+(5.5*s)+'px system-ui';c.textAlign='left';c.fillText('TinkerCad \u2014 Circuits',5*s,9.5*s);
+  // Right panel
+  c.fillStyle='#13151f';c.fillRect(W-36*s,0,36*s,H);c.strokeStyle='#2a2f45';c.lineWidth=.5;c.beginPath();c.moveTo(W-36*s,0);c.lineTo(W-36*s,H);c.stroke();
+  c.fillStyle='#0accc5';c.font='bold '+(4.5*s)+'px system-ui';c.textAlign='center';c.fillText('Components',W-18*s,14*s);
+  ['Arduino Uno','Resistor','LED','Breadboard','Button','Servo'].forEach(function(t,i){c.fillStyle='#2a2f45';rP(W-33*s,18*s+i*11*s,30*s,9*s,2);c.fill();c.fillStyle='#6b7280';c.font=(4*s)+'px system-ui';c.textAlign='center';c.fillText(t,W-18*s,25*s+i*11*s);});
+  // Arduino (dark navy — TinkerCad colour)
+  var ax=6*s,ay=13*s,aw=56*s,ah=H-18*s;
+  c.fillStyle='#1a2744';c.strokeStyle='#2a3a60';c.lineWidth=1.2;rP(ax,ay,aw,ah,4);c.fill();c.stroke();
+  c.strokeStyle='rgba(80,120,255,0.1)';c.lineWidth=.4;for(var li=1;li<5;li++){c.beginPath();c.moveTo(ax,ay+ah*li/5);c.lineTo(ax+aw,ay+ah*li/5);c.stroke();}
+  c.fillStyle='#1e3166';rP(ax+aw*.12,ay+ah*.3,aw*.7,ah*.22,2);c.fill();
+  c.fillStyle='#6090ff';c.font='bold '+(4.5*s)+'px system-ui';c.textAlign='center';c.fillText('Arduino Uno',ax+aw/2,ay+ah*.42);
+  c.fillStyle='#555';rP(ax+aw*.18,ay+ah*.88,aw*.5,ah*.1,2);c.fill();
+  // Pin dots
+  function pinDot(y,col){c.fillStyle=col;c.strokeStyle='#fff';c.lineWidth=.5;c.beginPath();c.arc(ax+aw,y,4*s,0,Math.PI*2);c.fill();c.stroke();}
+  pinDot(ay+ah*.22,'#ef4444'); // 5V
+  pinDot(ay+ah*.72,'#3b82f6'); // GND
+  if(si===1||si===2||si===7)pinDot(ay+ah*.46,'#a78bfa'); // Pin 2
+  if(si===2||si===4||si===5||si===7)pinDot(ay+ah*.35,'#f97316'); // Pin 9
+  if(si===7)pinDot(ay+ah*.55,'#f97316'); // Pin 10
+  // Breadboard (dark grey — TinkerCad style)
+  var bx=72*s,by=13*s,bw=W-72*s-39*s,bh=H-18*s;
+  c.fillStyle='#2c2e3e';c.strokeStyle='#3a3d50';c.lineWidth=1;rP(bx,by,bw,bh,4);c.fill();c.stroke();
+  c.fillStyle='rgba(239,68,68,.28)';c.fillRect(bx+2,by+2,bw-4,bh*.1);
+  c.fillStyle='rgba(59,130,246,.28)';c.fillRect(bx+2,by+bh*.89,bw-4,bh*.1);
+  c.strokeStyle='#ef4444';c.lineWidth=.8;c.setLineDash([3,2]);c.beginPath();c.moveTo(bx+4,by+bh*.065);c.lineTo(bx+bw-4,by+bh*.065);c.stroke();
+  c.strokeStyle='#3b82f6';c.beginPath();c.moveTo(bx+4,by+bh*.94);c.lineTo(bx+bw-4,by+bh*.94);c.stroke();c.setLineDash([]);
+  c.fillStyle='#ef4444';c.font='bold '+(5*s)+'px system-ui';c.textAlign='left';c.fillText('+',bx+2,by+bh*.077);
+  c.fillStyle='#3b82f6';c.fillText('\u2212',bx+2,by+bh*.965);
+  c.fillStyle='rgba(0,0,0,.35)';
+  var hcols=9,hsx=(bw-12*s)/(hcols-1);
+  for(var col=0;col<hcols;col++)for(var row=0;row<4;row++){c.beginPath();c.arc(bx+6*s+col*hsx,by+bh*.18+row*(bh*.62/3),1.6*s,0,Math.PI*2);c.fill();}
+  for(var col2=0;col2<hcols;col2++)for(var row2=0;row2<4;row2++){c.beginPath();c.arc(bx+6*s+col2*hsx,by+bh*.57+row2*(bh*.3/3),1.6*s,0,Math.PI*2);c.fill();}
+  c.fillStyle='#1e1f2e';c.fillRect(bx,by+bh*.5,bw,bh*.05);
+  // Components on breadboard
+  var rx=bx+bw*.06,ry=by+bh*.25,rw=bw*.36,rh=bh*.1;
+  var lx=bx+bw*.62,lby=by+bh*.18,lbh=bh*.17;
+  // Resistor
+  if(si!==4&&si!==5){
+    c.fillStyle='#d4a855';c.strokeStyle='#8a6030';c.lineWidth=.8;rP(rx,ry,rw,rh,2);c.fill();c.stroke();
+    [{c:'#dc2626',x:.2},{c:'#dc2626',x:.32},{c:'#7c3a10',x:.44},{c:'#d4a017',x:.62}].forEach(function(b){c.fillStyle=b.c;c.fillRect(rx+rw*b.x,ry,rw*.1,rh);});
+  }
+  // LED
+  if(si!==4&&si!==5){
+    c.fillStyle='rgba(220,40,40,.85)';c.strokeStyle='#ef4444';c.lineWidth=1;c.beginPath();c.arc(lx,lby+lbh*.35,bw*.068,0,Math.PI*2);c.fill();c.stroke();
+    c.fillStyle='rgba(255,200,200,.3)';c.beginPath();c.arc(lx-bw*.02,lby+lbh*.2,bw*.023,0,Math.PI*2);c.fill();
+    c.fillStyle='#7f1d1d';c.fillRect(lx-bw*.068,lby+lbh*.63,bw*.136,lbh*.27);
+    c.strokeStyle='#aaa';c.lineWidth=1.6;c.beginPath();c.moveTo(lx-bw*.026,lby+lbh*.9);c.lineTo(lx-bw*.026,lby+lbh*1.72);c.stroke();c.beginPath();c.moveTo(lx+bw*.026,lby+lbh*.9);c.lineTo(lx+bw*.026,lby+lbh*1.36);c.stroke();
+    c.fillStyle='#ef4444';c.font='bold '+(5*s)+'px system-ui';c.textAlign='center';c.fillText('+',lx-bw*.026,lby+lbh*1.88);c.fillStyle='#3b82f6';c.fillText('\u2212',lx+bw*.026,lby+lbh*1.5);
+  }
+  // Button (steps 1,6)
+  if(si===1||si===6){var btnx=bx+bw*.3,btny=by+bh*.36,bw2=bw*.14,bh2=bh*.14;c.fillStyle='#2a2a3a';c.strokeStyle='#3a3a5a';c.lineWidth=.8;rP(btnx,btny,bw2,bh2,3);c.fill();c.stroke();c.fillStyle='#cc3333';c.strokeStyle='#ff5555';rP(btnx+bw2*.15,btny+bh2*.15,bw2*.7,bh2*.7,3);c.fill();c.stroke();}
+  // Servo (steps 4,5,6)
+  if(si===4||si===5||si===6){var svx=si===6?bx+bw*.44:bx+bw*.1,svy=by+bh*.55,svww=bw*(si===6?.38:.55),svhh=bh*.3;c.fillStyle='#4a4a5a';c.strokeStyle='#6a6a7a';c.lineWidth=.8;rP(svx,svy,svww,svhh,4);c.fill();c.stroke();c.fillStyle='#333';rP(svx+svww*.1,svy+svhh*.15,svww*.8,svhh*.7,3);c.fill();c.fillStyle='#aaa';c.beginPath();c.arc(svx+svww*.5,svy+svhh*.5,svhh*.12,0,Math.PI*2);c.fill();c.strokeStyle='#f97316';c.lineWidth=2.5*s;c.lineCap='round';c.beginPath();c.moveTo(svx+svww*.5,svy+svhh*.5);c.lineTo(svx+svww*.5,svy-svhh*.18);c.stroke();}
+  // Wires
+  c.lineCap='round';c.setLineDash([]);
+  if(si!==4&&si!==5){
+    c.strokeStyle='#ef4444';c.lineWidth=4*s;c.beginPath();c.moveTo(ax+aw,ay+ah*.22);c.lineTo(rx,ry+rh/2);c.stroke();
+    c.strokeStyle='#f97316';c.lineWidth=3.5*s;c.beginPath();c.moveTo(rx+rw,ry+rh/2);c.bezierCurveTo(rx+rw+5,ry-3,lx-bw*.026,lby+lbh*1.4,lx-bw*.026,lby+lbh*1.72);c.stroke();
+    c.strokeStyle='#3b82f6';c.lineWidth=4*s;c.beginPath();c.moveTo(lx+bw*.026,lby+lbh*1.36);c.bezierCurveTo(lx+bw*.026,lby+lbh*2,ax+aw-1,ay+ah*.82,ax+aw,ay+ah*.72);c.stroke();
+  }
+  if(si===1||si===6){var bm=bx+bw*.37,bb=by+bh*.5;c.strokeStyle='#a78bfa';c.lineWidth=3*s;c.beginPath();c.moveTo(ax+aw,ay+ah*.46);c.bezierCurveTo(ax+aw+8,ay+ah*.44,bm-4,bb-4,bm,bb);c.stroke();c.strokeStyle='#3b82f6';c.lineWidth=3*s;c.beginPath();c.moveTo(bx+bw*.44,by+bh*.5);c.bezierCurveTo(bx+bw*.46,by+bh*.54,ax+aw+4,ay+ah*.8,ax+aw,ay+ah*.72);c.stroke();}
+  if(si===4||si===5||si===6){
+    var svx2=si===6?bx+bw*.44:bx+bw*.1;
+    c.strokeStyle='#ef4444';c.lineWidth=3.5*s;c.beginPath();c.moveTo(ax+aw,ay+ah*.22);c.lineTo(svx2+bw*(si===6?.19:.275),by+bh*.55);c.stroke();
+    c.strokeStyle='#3b82f6';c.lineWidth=3.5*s;c.beginPath();c.moveTo(ax+aw,ay+ah*.72);c.lineTo(svx2+bw*(si===6?.19:.275),by+bh*.85);c.stroke();
+    c.strokeStyle='#f97316';c.lineWidth=3*s;c.beginPath();c.moveTo(ax+aw,ay+ah*.35);c.lineTo(svx2+bw*(si===6?.19:.275),by+bh*.7);c.stroke();
+  }
+  // Callout numbers
+  function clu(x,y,n,col){c.fillStyle=col+'44';c.strokeStyle=col+'99';c.lineWidth=.8;c.beginPath();c.arc(x,y,7*s,0,Math.PI*2);c.fill();c.stroke();c.fillStyle=col;c.font='bold '+(6*s)+'px system-ui';c.textAlign='center';c.fillText(n,x,y+2.5*s);}
+  if(si!==4&&si!==5){clu((ax+aw+rx)/2,ay+ah*.13,'1','#ef4444');clu((rx+rw+lx)/2,ry-11*s,'2','#f97316');clu(lx+bw*.14,lby+lbh,'3','#3b82f6');}
+  if(si===4||si===5){clu(ax+aw+8*s,ay+ah*.3,'1','#ef4444');clu(ax+aw+8*s,ay+ah*.65,'2','#3b82f6');clu(ax+aw+8*s,ay+ah*.47,'3','#f97316');}
+}
+
+// ═══════════════════════════════════════════════════
+// INFO CANVAS
+// ═══════════════════════════════════════════════════
+function drawInfoBg(){
+  ctx.fillStyle='#090b12';ctx.fillRect(0,0,CW,CH);
+  ctx.strokeStyle='rgba(255,255,255,.025)';ctx.lineWidth=1;
+  for(var x=0;x<CW;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CH);ctx.stroke();}
+  for(var y=0;y<CH;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(CW,y);ctx.stroke();}
+  if(STEPS[cur].id==='m2s1')drawServoInfoCanvas();
+}
+function drawServoInfoCanvas(){
+  var cx=CW/2,cy=CH/2,sc=Math.min(CW,CH)/500;
+  rr(cx-55*sc,cy-35*sc,110*sc,70*sc,8);
+  var sg=ctx.createLinearGradient(cx-55*sc,cy-35*sc,cx-55*sc,cy+35*sc);sg.addColorStop(0,'#6b7280');sg.addColorStop(1,'#374151');
+  ctx.fillStyle=sg;ctx.strokeStyle='#1f2937';ctx.lineWidth=2;ctx.fill();ctx.stroke();
+  ctx.fillStyle='#2e2e2e';ctx.strokeStyle='#555';ctx.lineWidth=1;rr(cx-38*sc,cy-20*sc,76*sc,40*sc,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#999';ctx.beginPath();ctx.arc(cx,cy,8*sc,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(245,166,35,.3)';ctx.lineWidth=4*sc;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy-44*sc);ctx.stroke();
+  ctx.strokeStyle='#f5a623';ctx.lineWidth=5*sc;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+44*sc,cy);ctx.stroke();
+  ctx.fillStyle='#f5a623';ctx.beginPath();ctx.arc(cx+44*sc,cy,5*sc,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(245,166,35,.3)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(cx,cy,26*sc,-Math.PI/2,0);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(245,166,35,.5)';ctx.font='bold '+cl(9,sc*12,15)+'px system-ui';ctx.textAlign='left';ctx.fillText('0° closed',cx+6*sc,cy-30*sc);
+  ctx.fillStyle='#f5a623';ctx.fillText('90° open!',cx+46*sc,cy+4*sc);
+  ctx.fillStyle='#e8e9ed';ctx.font='bold '+cl(13,sc*18,22)+'px system-ui';ctx.textAlign='center';ctx.fillText('Servo motor',cx,cy-52*sc);
+  var wy=cy+64*sc;
+  [['#ef4444','Red = 5V'],['#2a2a2a','Black/Brown = GND'],['#f97316','Orange = Signal']].forEach(function(w,i){
+    ctx.fillStyle=w[0];ctx.strokeStyle='#888';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx+(i-1)*85*sc,wy,10*sc,0,Math.PI*2);ctx.fill();if(i===1)ctx.stroke();
+    ctx.fillStyle='#c4c8db';ctx.font=cl(9,sc*11,14)+'px system-ui';ctx.textAlign='center';ctx.fillText(w[1],cx+(i-1)*85*sc,wy+18*sc);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// LOOP ANIMATION
+// ═══════════════════════════════════════════════════
+function startLoop(){if(loopRaf)cancelAnimationFrame(loopRaf);loopFrame();}
+function loopFrame(){
+  var cv=document.getElementById('loopCv');if(!cv)return;
+  var pw=cv.parentElement.offsetWidth,ph=Math.round(pw*.34);
+  if(cv.width!==pw*DPR){cv.width=pw*DPR;cv.height=ph*DPR;cv.style.height=ph+'px';}
+  var LW=pw,LH=ph,c=cv.getContext('2d');
+  c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,LW,LH);
+  var m=7,aw=22,x0=m+aw,y0=6,x1=LW-m,y1=LH-7;
+  c.strokeStyle='#2a2f45';c.lineWidth=2;c.setLineDash([]);c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y0);c.lineTo(x1,y1);c.lineTo(x0,y1);c.closePath();c.stroke();
+  c.fillStyle='#1a7a35';c.strokeStyle='#22a040';c.lineWidth=.8;
+  c.beginPath();c.moveTo(m+3,y0);c.lineTo(m+aw-3,y0);c.arcTo(m+aw,y0,m+aw,y0+3,3);c.lineTo(m+aw,y1-3);c.arcTo(m+aw,y1,m+aw-3,y1,3);c.lineTo(m+3,y1);c.arcTo(m,y1,m,y1-3,3);c.lineTo(m,y0+3);c.arcTo(m,y0,m+3,y0,3);c.closePath();c.fill();c.stroke();
+  c.save();c.translate(m+aw/2,LH/2);c.rotate(-Math.PI/2);c.fillStyle='#6ee7b7';c.font='bold '+(Math.max(5,LW*.018))+'px system-ui';c.textAlign='center';c.fillText('Arduino',0,3);c.restore();
+  c.fillStyle='#ef4444';c.font='bold '+(Math.max(5,LW*.02))+'px system-ui';c.textAlign='left';c.fillText('5V',x0+2,y0-1);
+  c.fillStyle='#3b82f6';c.fillText('GND',x0+2,y1+8);
+  // LED dome
+  var lx=LW*.43,ly=y0+1,lh=LH-y0*2-2;
+  c.strokeStyle='#c8c8c8';c.lineWidth=1;c.lineCap='round';c.beginPath();c.moveTo(lx-2.5,ly+lh*.35);c.lineTo(lx-2.5,ly+lh);c.stroke();c.beginPath();c.moveTo(lx+2.5,ly+lh*.5);c.lineTo(lx+2.5,ly+lh);c.stroke();
+  c.fillStyle='#111';c.fillRect(lx-lh*.22,ly+lh*.52,lh*.44,lh*.22);
+  var dg=c.createRadialGradient(lx-lh*.07,ly+lh*.25,lh*.02,lx,ly+lh*.32,lh*.22);dg.addColorStop(0,'rgba(255,180,180,.85)');dg.addColorStop(.4,'rgba(200,40,40,.8)');dg.addColorStop(1,'rgba(110,10,10,.82)');
+  c.fillStyle=dg;c.strokeStyle='rgba(180,20,20,.7)';c.lineWidth=.8;c.beginPath();c.arc(lx,ly+lh*.32,lh*.22,Math.PI,0);c.closePath();c.fill();c.stroke();
+  c.fillStyle='rgba(255,255,255,.2)';c.beginPath();c.arc(lx-lh*.07,ly+lh*.22,lh*.07,0,Math.PI*2);c.fill();
+  c.fillStyle='#f87171';c.font=(Math.max(5,LW*.016))+'px system-ui';c.textAlign='center';c.fillText('LED',lx,ly+lh+7);
+  // Resistor
+  var rrx=x1-5,rry=LH/2-5;
+  var rbg=c.createLinearGradient(rrx-11,rry,rrx-11,rry+10);rbg.addColorStop(0,'#f0e0a0');rbg.addColorStop(.5,'#f8eeb8');rbg.addColorStop(1,'#c8b870');
+  c.fillStyle=rbg;c.strokeStyle='#a89848';c.lineWidth=.8;
+  c.beginPath();c.moveTo(rrx-11+2,rry);c.lineTo(rrx+11-2,rry);c.arcTo(rrx+11,rry,rrx+11,rry+2,2);c.lineTo(rrx+11,rry+10-2);c.arcTo(rrx+11,rry+10,rrx+11-2,rry+10,2);c.lineTo(rrx-11+2,rry+10);c.arcTo(rrx-11,rry+10,rrx-11,rry+8,2);c.lineTo(rrx-11,rry+2);c.arcTo(rrx-11,rry,rrx-11+2,rry,2);c.closePath();c.fill();c.stroke();
+  [['#dc2626',rrx-8],['#dc2626',rrx-3],['#7c3a10',rrx+2]].forEach(function(b){c.fillStyle=b[0];c.fillRect(b[1],rry,4,10);});
+  c.fillStyle='#fcd34d';c.font=(Math.max(5,LW*.015))+'px system-ui';c.textAlign='center';c.fillText('R',rrx,rry+17);
+  // Particle
+  var perim=(x1-x0)*2+(y1-y0)*2,pos=(loopT%1)*perim;
+  var segs=[[x0,y0,x1,y0],[x1,y0,x1,y1],[x1,y1,x0,y1],[x0,y1,x0,y0]];
+  var acc=0,px=x0,py=y0;
+  for(var si=0;si<segs.length;si++){var sg=segs[si],l=Math.hypot(sg[2]-sg[0],sg[3]-sg[1]);if(pos<=acc+l){var rr2=(pos-acc)/l;px=sg[0]+(sg[2]-sg[0])*rr2;py=sg[1]+(sg[3]-sg[1])*rr2;break;}acc+=l;}
+  var g=c.createRadialGradient(px,py,0,px,py,6);g.addColorStop(0,'#f5a623');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(px,py,6,0,Math.PI*2);c.fill();c.fillStyle='#f5a623';c.beginPath();c.arc(px,py,2,0,Math.PI*2);c.fill();
+  loopT+=0.003;loopRaf=requestAnimationFrame(loopFrame);
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+// Patch resize to also build right panel
+var _origResize=resize;
+resize=function(){
+  _origResize();
+  var step=STEPS[cur];
+  if(step.type==='splitcode'||step.type==='splitfull'||step.type==='door'||step.type==='cert'){
+    // only build if not already present
+    if(!document.getElementById('dynPanel'))buildRightPanel();
+  }
+};
+
+// Patch goStep to rebuild right panel
+var _origGoStep=goStep;
+goStep=function(idx){
+  // Remove dynamic panel before navigating
+  var old=document.getElementById('dynPanel');if(old)old.remove();
+  mc.style.display='block';
+  if(mc.parentElement!==ca)ca.insertBefore(mc,ca.firstChild);
+  _origGoStep(idx);
+  var step=STEPS[idx];
+  if(step.type==='splitcode'||step.type==='splitfull'||step.type==='door'||step.type==='cert'){
+    buildRightPanel();
+  }
+};
+
+try{
+  var sd=localStorage.getItem('ercb_done');if(sd)stepDone=JSON.parse(sd);
+  var sc3=parseInt(localStorage.getItem('ercb_cur')||'0');if(sc3>0&&sc3<STEPS.length)cur=sc3;
+}catch(e){}
+goStep(cur);
+</script>
+</body>
+</html>
